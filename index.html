@@ -1,0 +1,2275 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark light">
+<title>Guía Definitiva Vercel Skills (npx skills) — Tutorial paso a paso</title>
+<style>
+/* ============ VARIABLES Y BASE ============ */
+:root{
+  --bg:#0a0e1a;
+  --card:#0f172a;
+  --card-2:#0b1222;
+  --accent-blue:#1e3a5f;
+  --text:#e2e8f0;
+  --muted:#94a3b8;
+  --accent:#38bdf8;
+  --border:#1e293b;
+  --ok:#34d399;
+  --warn:#fbbf24;
+  --err:#f87171;
+  --radius:14px;
+  --fs:16px;
+  --shadow:0 10px 30px rgba(0,0,0,.35);
+}
+html[data-theme="light"]{
+  --bg:#f1f5f9;
+  --card:#ffffff;
+  --card-2:#f8fafc;
+  --accent-blue:#dbeafe;
+  --text:#0f172a;
+  --muted:#475569;
+  --accent:#0369a1;
+  --border:#cbd5e1;
+  --ok:#047857;
+  --warn:#b45309;
+  --err:#b91c1c;
+  --shadow:0 8px 24px rgba(15,23,42,.10);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  font-size:var(--fs);
+  line-height:1.65;
+  -webkit-text-size-adjust:100%;
+}
+img,svg{max-width:100%}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid transparent}
+a:hover,a:focus-visible{border-bottom-color:var(--accent)}
+h1,h2,h3,h4{line-height:1.25;margin:0 0 .5em}
+h1{font-size:1.7rem}
+h2{font-size:1.3rem;margin-top:1.8em;padding-bottom:.35rem;border-bottom:1px solid var(--border)}
+h3{font-size:1.08rem;margin-top:1.4em;color:var(--text)}
+h4{font-size:.98rem;margin-top:1.1em;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+p{margin:0 0 1em}
+ul,ol{margin:0 0 1em;padding-left:1.35em}
+li{margin:.25em 0}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:.9em;
+  background:rgba(56,189,248,.10);border:1px solid var(--border);border-radius:6px;padding:.08em .35em;color:var(--text)}
+hr{border:0;border-top:1px solid var(--border);margin:1.6em 0}
+
+/* ============ BARRA DE PROGRESO ============ */
+#progressbar{position:fixed;top:0;left:0;height:3px;width:0%;background:var(--accent);z-index:200;transition:width .12s linear}
+
+/* ============ TOPBAR ============ */
+.topbar{background:linear-gradient(180deg,var(--card-2),var(--bg));border-bottom:1px solid var(--border)}
+.topbar-inner{max-width:1040px;margin:0 auto;padding:.85rem 1rem .55rem;display:flex;flex-wrap:wrap;gap:.6rem;align-items:center;justify-content:space-between}
+.brand{display:flex;align-items:center;gap:.55rem;min-width:0}
+.brand-mark{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:10px;
+  background:linear-gradient(135deg,#38bdf8,#1e3a5f);color:#04121f;font-weight:800;flex:0 0 auto}
+.brand strong{display:block;font-size:1rem;line-height:1.2}
+.chip{display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:.05em;padding:.1rem .42rem;border-radius:999px;
+  background:rgba(56,189,248,.15);color:var(--accent);border:1px solid rgba(56,189,248,.35);vertical-align:middle}
+.tools{display:flex;flex-wrap:wrap;gap:.35rem;align-items:center}
+.tool{appearance:none;cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--text);
+  border-radius:10px;padding:.42rem .6rem;font-size:.82rem;font-weight:600;min-width:38px;min-height:38px;line-height:1}
+.tool:hover{border-color:var(--accent);color:var(--accent)}
+.tool:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.tool[aria-pressed="true"]{background:rgba(56,189,248,.16);border-color:var(--accent);color:var(--accent)}
+.search-wrap{position:relative;flex:1 1 180px;min-width:150px}
+#search{width:100%;padding:.5rem .7rem;border-radius:10px;border:1px solid var(--border);
+  background:var(--card);color:var(--text);font-size:.86rem;min-height:38px}
+#search:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:var(--accent)}
+.search-results{position:absolute;top:calc(100% + 6px);left:0;right:0;max-height:60vh;overflow:auto;
+  background:var(--card);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);z-index:90}
+.sr-item{display:block;width:100%;text-align:left;background:none;border:0;border-bottom:1px solid var(--border);
+  color:var(--text);padding:.6rem .75rem;cursor:pointer;font:inherit;font-size:.84rem}
+.sr-item:last-child{border-bottom:0}
+.sr-item:hover,.sr-item:focus-visible{background:rgba(56,189,248,.12);outline:none}
+.sr-item .sr-tab{display:inline-block;font-size:.66rem;font-weight:700;letter-spacing:.05em;color:var(--accent);
+  text-transform:uppercase;margin-right:.4rem}
+.sr-empty{padding:.7rem .8rem;color:var(--muted);font-size:.84rem}
+
+/* ============ PESTAÑAS ============ */
+.tabs{position:sticky;top:0;z-index:100;display:flex;gap:.25rem;overflow-x:auto;scrollbar-width:thin;
+  background:var(--card);border-bottom:1px solid var(--border);padding:.35rem .5rem;
+  max-width:1040px;margin:0 auto;border-radius:0 0 12px 12px}
+.tabs button{flex:0 0 auto;appearance:none;cursor:pointer;border:1px solid transparent;background:transparent;
+  color:var(--muted);font:inherit;font-size:.76rem;font-weight:700;letter-spacing:.05em;
+  padding:.55rem .7rem;border-radius:9px;white-space:nowrap;min-height:40px}
+.tabs button:hover{color:var(--text);background:rgba(56,189,248,.08)}
+.tabs button[aria-selected="true"]{background:var(--accent-blue);color:#fff;border-color:var(--accent)}
+html[data-theme="light"] .tabs button[aria-selected="true"]{color:#0b2a45}
+.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ============ MAIN / PANELES ============ */
+main{max-width:1040px;margin:0 auto;padding:1.1rem 1rem 4rem}
+.panel{display:none;animation:fade .22s ease-out}
+.panel.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.05rem;margin:0 0 1rem;box-shadow:var(--shadow)}
+.card.tight{padding:.8rem .9rem}
+.card h2:first-child,.card h3:first-child,.card h4:first-child{margin-top:0}
+.lead{font-size:1.02rem;color:var(--text)}
+.muted{color:var(--muted)}
+.small{font-size:.84rem}
+
+.grid{display:grid;gap:.8rem;grid-template-columns:1fr}
+@media(min-width:720px){.grid.two{grid-template-columns:1fr 1fr}.grid.three{grid-template-columns:repeat(3,1fr)}}
+
+.note,.warnbox,.okbox,.errbox{border-radius:12px;padding:.8rem .9rem;margin:0 0 1rem;font-size:.9rem;border:1px solid var(--border)}
+.note{background:rgba(56,189,248,.08);border-color:rgba(56,189,248,.35)}
+.warnbox{background:rgba(251,191,36,.08);border-color:rgba(251,191,36,.4)}
+.okbox{background:rgba(52,211,153,.08);border-color:rgba(52,211,153,.4)}
+.errbox{background:rgba(248,113,113,.08);border-color:rgba(248,113,113,.4)}
+.note strong,.warnbox strong,.okbox strong,.errbox strong{display:block;margin-bottom:.2rem}
+
+.pill{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.04em;padding:.12rem .5rem;border-radius:999px;
+  background:rgba(56,189,248,.14);color:var(--accent);border:1px solid rgba(56,189,248,.3);margin:0 .3rem .3rem 0}
+
+/* ============ TABLAS ============ */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--border);border-radius:12px;margin:0 0 1rem;background:var(--card)}
+table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:520px}
+th,td{padding:.55rem .7rem;text-align:left;border-bottom:1px solid var(--border);vertical-align:top;overflow-wrap:anywhere}
+th{background:rgba(56,189,248,.10);color:var(--text);font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}
+tr:last-child td{border-bottom:0}
+td code{white-space:nowrap}
+
+/* ============ CÓDIGO Y COPIAR ============ */
+.code-wrap{position:relative;margin:0 0 1rem}
+pre{margin:0;background:var(--card-2);border:1px solid var(--border);border-radius:12px;
+  padding:2.3rem .85rem .85rem;overflow-x:auto;font-size:.82rem;line-height:1.6;tab-size:2}
+pre code{background:none;border:0;padding:0;font-size:1em;color:var(--text);white-space:pre}
+.copy-btn{position:absolute;top:.45rem;right:.45rem;appearance:none;cursor:pointer;
+  border:1px solid var(--border);background:var(--card);color:var(--accent);border-radius:8px;
+  font-size:.68rem;font-weight:800;letter-spacing:.06em;padding:.32rem .55rem;min-height:30px}
+.copy-btn:hover{border-color:var(--accent)}
+.copy-btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.copy-btn.done{color:var(--ok);border-color:var(--ok)}
+.copy-btn.failed{color:var(--err);border-color:var(--err)}
+
+/* ============ PASOS ============ */
+.step{border-left:3px solid var(--accent);padding:.15rem 0 .15rem .85rem;margin:0 0 1.3rem}
+.step-n{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.08em;color:var(--accent);
+  text-transform:uppercase;margin-bottom:.15rem}
+.step h3{margin:.1rem 0 .45rem}
+.result{font-size:.86rem;background:rgba(52,211,153,.08);border:1px solid rgba(52,211,153,.35);
+  border-radius:10px;padding:.55rem .7rem;margin:.5rem 0 0}
+.result strong{color:var(--ok)}
+
+/* ============ CHECKLIST ============ */
+.checklist{list-style:none;padding:0;margin:0 0 1rem}
+.checklist li{margin:0}
+.check{display:flex;gap:.6rem;align-items:flex-start;padding:.5rem .55rem;border-radius:10px;cursor:pointer;
+  border:1px solid transparent}
+.check:hover{background:rgba(56,189,248,.07);border-color:var(--border)}
+.check input{margin-top:.35rem;width:18px;height:18px;flex:0 0 auto;accent-color:var(--accent);cursor:pointer}
+.check span{font-size:.9rem}
+.check input:checked + span{color:var(--muted);text-decoration:line-through}
+.check input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ============ DESPLEGABLES ============ */
+details{border:1px solid var(--border);border-radius:12px;background:var(--card);margin:0 0 .7rem;overflow:hidden}
+summary{cursor:pointer;padding:.7rem .85rem;font-weight:700;font-size:.9rem;list-style:none;display:flex;justify-content:space-between;gap:.6rem;align-items:center}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"▾";color:var(--accent);font-size:.9rem;transition:transform .18s}
+details[open] summary::after{transform:rotate(180deg)}
+details[open] summary{border-bottom:1px solid var(--border)}
+details .details-body{padding:.85rem}
+details .details-body > :last-child{margin-bottom:0}
+
+/* ============ SVG ============ */
+.svg-slot{width:100%;max-width:640px;margin:0 auto .6rem;aspect-ratio:640/240}
+.svg-slot svg,.svg-slot img{display:block;width:100%;height:100%;object-fit:contain}
+.svg-caption{text-align:center;font-size:.82rem;color:var(--muted);margin:0 0 1rem}
+.sv-card{fill:#0b1222;stroke:url(#x);stroke-width:2}
+.hero-svg .sv-card{fill:var(--card-2);stroke:#38bdf8}
+html[data-theme="light"] .hero-svg .sv-card{fill:#ffffff;stroke:#0369a1}
+.hero-svg .sv-node{fill:var(--card);stroke:#38bdf8;stroke-width:2}
+html[data-theme="light"] .hero-svg .sv-node{fill:#ffffff;stroke:#0369a1}
+.hero-svg .sv-line{fill:#38bdf8;opacity:.55}
+html[data-theme="light"] .hero-svg .sv-line{fill:#0369a1;opacity:.45}
+.hero-svg .sv-txt{fill:var(--text);font-family:system-ui,sans-serif;font-weight:700}
+.hero-svg .sv-muted{fill:var(--muted);font-family:system-ui,sans-serif;font-weight:600}
+.hero-svg .flow path{stroke-dasharray:7 9;animation:dashflow 2.6s linear infinite}
+@keyframes dashflow{to{stroke-dashoffset:-32}}
+.hero-svg .halo{animation:haloPulse 4s ease-in-out infinite;transform-origin:320px 120px}
+@keyframes haloPulse{0%,100%{opacity:.5}50%{opacity:1}}
+.hero-svg .node-ring{animation:ringPulse 3.2s ease-in-out infinite}
+.hero-svg .node-ring.d1{animation-delay:.4s}
+.hero-svg .node-ring.d2{animation-delay:.8s}
+.hero-svg .node-ring.d3{animation-delay:1.2s}
+.hero-svg .node-ring.d4{animation-delay:1.6s}
+.hero-svg .node-ring.d5{animation-delay:2s}
+@keyframes ringPulse{0%,100%{opacity:.18}50%{opacity:.65}}
+body.svg-paused .hero-svg *{animation-play-state:paused !important}
+@media (prefers-reduced-motion: reduce){
+  .hero-svg *{animation:none !important}
+  html{scroll-behavior:auto}
+  .panel{animation:none}
+}
+
+/* ============ AUTOR / CRÉDITOS ============ */
+.author-name{font-size:2rem;font-weight:800;letter-spacing:-.01em;line-height:1.15;margin:.2rem 0 .1rem;
+  background:linear-gradient(135deg,#38bdf8,#818cf8);-webkit-background-clip:text;background-clip:text;color:transparent}
+html[data-theme="light"] .author-name{background:linear-gradient(135deg,#0369a1,#4338ca);-webkit-background-clip:text;background-clip:text}
+.author-role{font-size:.95rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin:0 0 1rem}
+.meta-list{list-style:none;padding:0;margin:0;font-size:.88rem}
+.meta-list li{display:flex;justify-content:space-between;gap:1rem;padding:.45rem 0;border-bottom:1px solid var(--border)}
+.meta-list li:last-child{border-bottom:0}
+.meta-list .k{color:var(--muted);font-weight:600}
+.meta-list .v{font-family:ui-monospace,Menlo,Consolas,monospace;text-align:right}
+
+/* ============ VARIOS ============ */
+.kbd{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8em;background:var(--card-2);
+  border:1px solid var(--border);border-bottom-width:2px;border-radius:6px;padding:.1em .4em}
+.anchor-target{scroll-margin-top:70px}
+.flash{animation:flash 1.6s ease-out}
+@keyframes flash{0%{background:rgba(56,189,248,.28)}100%{background:transparent}}
+
+#toTop{position:fixed;right:14px;bottom:14px;z-index:120;width:46px;height:46px;border-radius:50%;
+  border:1px solid var(--border);background:var(--card);color:var(--accent);font-size:1.2rem;cursor:pointer;
+  display:none;place-items:center;box-shadow:var(--shadow)}
+#toTop.show{display:grid}
+#toTop:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+#toast{position:fixed;left:50%;bottom:76px;transform:translateX(-50%) translateY(10px);z-index:150;
+  background:var(--card);border:1px solid var(--accent);color:var(--text);border-radius:10px;
+  padding:.55rem .9rem;font-size:.84rem;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:opacity .18s,transform .18s}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.75);z-index:300;display:grid;place-items:center;padding:1rem}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem;max-width:560px;width:100%;box-shadow:var(--shadow)}
+.modal h2{margin:0 0 .5rem;font-size:1.05rem;border:0;padding:0}
+.modal textarea{width:100%;height:150px;background:var(--card-2);color:var(--text);border:1px solid var(--border);
+  border-radius:10px;padding:.6rem;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.8rem;resize:vertical}
+.modal .modal-actions{display:flex;gap:.5rem;justify-content:flex-end;margin-top:.7rem;flex-wrap:wrap}
+.btn{appearance:none;cursor:pointer;border:1px solid var(--border);background:var(--card-2);color:var(--text);
+  border-radius:10px;padding:.5rem .85rem;font:inherit;font-size:.85rem;font-weight:700;min-height:40px}
+.btn:hover{border-color:var(--accent);color:var(--accent)}
+.btn.primary{background:var(--accent-blue);border-color:var(--accent);color:#fff}
+html[data-theme="light"] .btn.primary{color:#0b2a45}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.print-header{display:none}
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+
+/* ============ IMPRESIÓN / PDF ============ */
+@page{size:A4 portrait;margin:14mm 12mm}
+@media print{
+  html,body{background:#fff !important;color:#000 !important;font-size:10.5pt}
+  body{--bg:#fff;--card:#fff;--card-2:#fff;--text:#000;--muted:#333;--border:#999;--accent:#000;--shadow:none}
+  #progressbar,.topbar,.tabs,#toTop,#toast,.copy-btn,.search-results,.no-print{display:none !important}
+  main{max-width:none;margin:0;padding:0}
+  .panel{display:block !important;animation:none !important}
+  .panel + .panel{margin-top:14pt}
+  .card{background:#fff !important;border:1px solid #999 !important;box-shadow:none !important;
+    break-inside:avoid;page-break-inside:avoid;margin:0 0 8pt}
+  h1,h2,h3,h4{color:#000 !important;break-after:avoid;page-break-after:avoid}
+  h2{border-bottom:1px solid #999 !important;margin-top:12pt}
+  p,li,td,th{color:#000 !important}
+  a{color:#000 !important;text-decoration:underline;border:0}
+  pre{background:#fff !important;border:1px solid #999 !important;color:#000 !important;
+    white-space:pre-wrap;overflow:visible;break-inside:avoid;page-break-inside:avoid;padding:.6rem}
+  pre code{color:#000 !important;background:none !important;border:0 !important}
+  code{background:#f2f2f2 !important;border:1px solid #bbb !important;color:#000 !important}
+  .table-wrap{overflow:visible !important;border:1px solid #999 !important;background:#fff !important;break-inside:auto}
+  table{min-width:0 !important;width:100% !important;font-size:9pt}
+  th{background:#eee !important;color:#000 !important}
+  th,td{border-bottom:1px solid #999 !important;color:#000 !important}
+  details{border:1px solid #999 !important;background:#fff !important;break-inside:avoid}
+  summary{color:#000 !important}
+  .note,.warnbox,.okbox,.errbox,.result{background:#fff !important;border:1px solid #999 !important;color:#000 !important}
+  .note *, .warnbox *, .okbox *, .errbox *, .result *{color:#000 !important}
+  .step{border-left:3px solid #000 !important}
+  .step-n{color:#000 !important}
+  .svg-slot{max-width:100% !important;aspect-ratio:auto;break-inside:avoid;page-break-inside:avoid}
+  .svg-slot svg{width:100%;height:auto}
+  .hero-svg *{animation:none !important}
+  .hero-svg .sv-card{fill:#fff !important;stroke:#000 !important}
+  .hero-svg .sv-node{fill:#fff !important;stroke:#000 !important}
+  .hero-svg .sv-line{fill:#000 !important;opacity:.6 !important}
+  .hero-svg .sv-txt,.hero-svg .sv-muted{fill:#000 !important}
+  .hero-svg .flow path{stroke:#000 !important;stroke-dasharray:none !important}
+  .hero-svg .halo{opacity:.25 !important}
+  .author-name{background:none !important;-webkit-text-fill-color:#000 !important;color:#000 !important}
+  .print-header{display:block;border-bottom:2px solid #000;margin-bottom:10pt;padding-bottom:6pt}
+  .print-header h1{font-size:15pt;margin:0}
+  .print-header p{margin:2pt 0 0;font-size:9pt;color:#333 !important}
+  .check input{accent-color:#000}
+  .check input:checked + span{text-decoration:line-through;color:#555 !important}
+}
+</style>
+</head>
+<body>
+
+<div id="progressbar" aria-hidden="true"></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">◈</span>
+      <div>
+        <strong>Vercel Skills · Tutorial</strong>
+        <span class="chip">V001</span>
+      </div>
+    </div>
+    <div class="tools">
+      <div class="search-wrap">
+        <input id="search" type="search" placeholder="Buscar en el tutorial…" aria-label="Buscar en el tutorial" autocomplete="off" spellcheck="false">
+        <div id="searchResults" class="search-results" role="listbox" aria-label="Resultados de búsqueda" hidden></div>
+      </div>
+      <button id="fontMinus" class="tool" type="button" aria-label="Reducir el tamaño de la letra" title="Reducir letra">A−</button>
+      <button id="fontPlus" class="tool" type="button" aria-label="Aumentar el tamaño de la letra" title="Aumentar letra">A+</button>
+      <button id="themeBtn" class="tool" type="button" aria-label="Cambiar entre tema oscuro y claro" title="Tema claro / oscuro" aria-pressed="false">☀</button>
+      <button id="pauseBtn" class="tool" type="button" aria-label="Pausar o reanudar la animación" title="Pausar / reanudar animación" aria-pressed="false">⏸</button>
+      <button id="printBtn" class="tool" type="button" aria-label="Imprimir o guardar como PDF" title="Imprimir / PDF">⎙</button>
+    </div>
+  </div>
+
+  <nav class="tabs" role="tablist" aria-label="Secciones del tutorial">
+    <button role="tab" type="button" id="tab-inicio" aria-controls="panel-inicio" aria-selected="true" data-tab="inicio">INICIO</button>
+    <button role="tab" type="button" id="tab-conceptos" aria-controls="panel-conceptos" aria-selected="false" data-tab="conceptos">CONCEPTOS</button>
+    <button role="tab" type="button" id="tab-procedimiento" aria-controls="panel-procedimiento" aria-selected="false" data-tab="procedimiento">PROCEDIMIENTO</button>
+    <button role="tab" type="button" id="tab-practica" aria-controls="panel-practica" aria-selected="false" data-tab="practica">PRÁCTICA</button>
+    <button role="tab" type="button" id="tab-errores" aria-controls="panel-errores" aria-selected="false" data-tab="errores">ERRORES</button>
+    <button role="tab" type="button" id="tab-resumen" aria-controls="panel-resumen" aria-selected="false" data-tab="resumen">RESUMEN</button>
+    <button role="tab" type="button" id="tab-fuentes" aria-controls="panel-fuentes" aria-selected="false" data-tab="fuentes">FUENTES</button>
+    <button role="tab" type="button" id="tab-creditos" aria-controls="panel-creditos" aria-selected="false" data-tab="creditos">CRÉDITOS</button>
+  </nav>
+</header>
+
+<div class="print-header">
+  <h1>Guía Definitiva Vercel Skills (npx skills) — Tutorial paso a paso</h1>
+  <p>Versión V001 · Generado el 17/10/2026 — 08:58:11 · Autor: Rubén Sbarsky</p>
+</div>
+
+<main id="main">
+
+<!-- ==================== INICIO ==================== -->
+<section class="panel active" id="panel-inicio" role="tabpanel" aria-labelledby="tab-inicio" tabindex="0">
+
+  <div class="svg-slot" id="svg-slot-inicio" role="img"
+       aria-label="Ilustración: un archivo central SKILL.md conectado mediante líneas animadas con varias herramientas de inteligencia artificial, que representa una habilidad reutilizable compartida entre agentes."></div>
+  <p class="svg-caption">Una sola habilidad (<code>SKILL.md</code>) compartida por muchos agentes.</p>
+
+  <h1>Guía Definitiva Vercel Skills (npx skills)</h1>
+  <p class="lead">Tutorial paso a paso para principiantes. Aprenderás qué es <strong>Vercel Skills</strong>, cómo instalar la herramienta, cómo crear tu primera habilidad y cómo evitar los errores más habituales — sin necesidad de conocimientos técnicos previos.</p>
+
+  <div class="grid two">
+    <div class="card tight">
+      <h3>¿Qué vas a conseguir?</h3>
+      <ul class="small" style="margin-bottom:0">
+        <li>Entender el problema que resuelve <code>npx skills</code>.</li>
+        <li>Verificar tu entorno (Node.js y Git).</li>
+        <li>Buscar, instalar, listar, actualizar y eliminar habilidades.</li>
+        <li>Crear tu propio archivo <code>SKILL.md</code> desde cero.</li>
+        <li>Diagnosticar los fallos más frecuentes.</li>
+      </ul>
+    </div>
+    <div class="card tight">
+      <h3>¿A quién va dirigido?</h3>
+      <p class="small">A cualquier persona que use (o quiera usar) asistentes de programación con IA y quiera dejar de mantener cinco archivos de reglas distintos. <strong>No hace falta saber programar</strong>, pero sí es necesario poder abrir una terminal y escribir comandos.</p>
+      <p class="small" style="margin-bottom:0"><strong>Conocimientos previos:</strong> ninguno técnico. Solo familiaridad básica con archivos y carpetas.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Cómo usar este tutorial</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Elemento</th><th>Para qué sirve</th></tr></thead>
+        <tbody>
+          <tr><td>Pestañas superiores</td><td>Ocho secciones independientes. La pestaña activa queda resaltada.</td></tr>
+          <tr><td>Buscador</td><td>Escribe una palabra (por ejemplo <em>symlink</em>) y salta directamente al punto exacto.</td></tr>
+          <tr><td>A− / A+</td><td>Reduce o aumenta el tamaño de la letra. Se guarda para la próxima visita.</td></tr>
+          <tr><td>☀</td><td>Alterna entre tema oscuro y claro.</td></tr>
+          <tr><td>⏸</td><td>Pausa o reanuda la animación de la ilustración.</td></tr>
+          <tr><td>⎙</td><td>Imprime o guarda el tutorial completo como PDF.</td></tr>
+          <tr><td>Botones COPIAR</td><td>Copian el bloque de código o la lista de enlaces tal cual, sin formato añadido.</td></tr>
+          <tr><td>Listas de comprobación</td><td>Marcan tu progreso y lo conservan al cerrar el navegador.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Ruta de aprendizaje recomendada</h2>
+    <ol>
+      <li><strong>CONCEPTOS</strong> — qué es una Skill, qué es la CLI y qué necesitas antes de empezar.</li>
+      <li><strong>PROCEDIMIENTO</strong> — los comandos, uno por uno, con resultado esperado.</li>
+      <li><strong>PRÁCTICA</strong> — dos proyectos guiados de principio a fin.</li>
+      <li><strong>ERRORES</strong> — qué hacer cuando algo falla.</li>
+      <li><strong>RESUMEN</strong> — chuleta de comandos y siguientes pasos.</li>
+      <li><strong>FUENTES</strong> — enlaces oficiales para ampliar.</li>
+    </ol>
+  </div>
+
+  <div class="note">
+    <strong>Nota de honestidad sobre la verificación</strong>
+    Este archivo se ha construido a partir del documento fuente entregado. El contenido reproduce lo que ese documento afirma. No se ha podido ejecutar la CLI <code>npx skills</code>, ni abrir el archivo en un navegador real, ni generar un PDF durante su elaboración. Por tanto: el código JavaScript y las hojas de estilo se han revisado estáticamente, pero <strong>no se declaran pruebas en navegador que no se hayan ejecutado</strong>. Los comandos de terminal que aparecen son los que documenta la fuente; no se han ejecutado contra el sistema real.
+  </div>
+
+  <div class="warnbox">
+    <strong>Importante sobre las versiones</strong>
+    La fuente exige <strong>Node.js 22.20 o superior</strong>. Si tu versión es inferior, la CLI puede no funcionar. Verifica siempre con <code>node -v</code> antes de continuar.
+  </div>
+
+</section>
+
+<!-- ==================== CONCEPTOS ==================== -->
+<section class="panel" id="panel-conceptos" role="tabpanel" aria-labelledby="tab-conceptos" tabindex="0">
+
+  <h1>Conceptos fundamentales</h1>
+  <p class="lead">Antes de escribir un solo comando, necesitas entender <em>qué problema</em> resuelve esta herramienta. Esta sección va de lo general a lo concreto.</p>
+
+  <h2 id="c-problema">1. El problema: cada agente habla su propio idioma</h2>
+  <p>En el desarrollo de software asistido por inteligencia artificial, el ecosistema de herramientas ha crecido muy rápido. Ese crecimiento ha traído consigo una fragmentación evidente: <strong>cada agente de codificación o entorno de desarrollo integrado (IDE) suele requerir su propia forma de configurar instrucciones personalizadas</strong>.</p>
+
+  <p>Imagina un equipo multidisciplinario. La arquitectura del proyecto exige que cada API consulte primero un esquema de validación estricto. Para que todos los asistentes lo respeten, el equipo debe escribir y mantener a mano:</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Archivo</th><th>Herramienta que lo lee</th></tr></thead>
+      <tbody>
+        <tr><td><code>.cursorrules</code></td><td>Cursor</td></tr>
+        <tr><td><code>CLAUDE.md</code></td><td>Claude Code</td></tr>
+        <tr><td><code>.copilot-instructions.md</code></td><td>GitHub Copilot</td></tr>
+        <tr><td><code>.windsurfrules</code></td><td>Windsurf</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>Cada vez que la regla de arquitectura evoluciona, el desarrollador debe actualizar individualmente cuatro o cinco archivos distintos, con sintaxis y formatos heterogéneos. El resultado es siempre el mismo: <strong>fricción, duplicación de esfuerzos y desalineación entre los miembros del equipo</strong>.</p>
+
+  <div class="card tight">
+    <h4>Interoperabilidad entre agentes</h4>
+    <p style="margin-bottom:0">Es la capacidad de definir un conjunto reutilizable de instrucciones operativas en un formato estandarizado, para que <strong>cualquier agente de inteligencia artificial</strong> —sin importar su fabricante o su interfaz— pueda interpretarlo y ejecutarlo sin necesidad de reescrituras específicas.</p>
+  </div>
+
+  <h2 id="c-que-es">2. ¿Qué es Vercel Skills (npx skills)?</h2>
+  <p><strong>Vercel Skills</strong> (<strong>npx skills</strong>) es la herramienta <strong>CLI</strong> (Interfaz de Línea de Comandos) de código abierto diseñada para servir como el <strong>motor universal del ecosistema de habilidades de agentes</strong> (<em>Agent Skills</em>).</p>
+
+  <div class="grid three">
+    <div class="card tight"><h4>Lenguaje</h4><p style="margin:0"><strong>TypeScript (100%)</strong></p></div>
+    <div class="card tight"><h4>Repositorio</h4><p style="margin:0"><code>vercel-labs/skills</code></p></div>
+    <div class="card tight"><h4>Licencia</h4><p style="margin:0"><strong>MIT</strong></p></div>
+    <div class="card tight"><h4>Estrellas</h4><p style="margin:0"><strong>35.3k</strong></p></div>
+    <div class="card tight"><h4>Forks</h4><p style="margin:0"><strong>3.0k</strong></p></div>
+    <div class="card tight"><h4>Agentes compatibles</h4><p style="margin:0"><strong>más de 75</strong></p></div>
+  </div>
+
+  <p>Entre esos más de 75 agentes compatibles de forma nativa se encuentran <strong>Claude Code, Cursor, Codex, OpenCode, GitHub Copilot y Kiro CLI</strong>.</p>
+
+  <h2 id="c-skill">3. ¿Qué es una «Skill» (habilidad)?</h2>
+  <p>Una <strong>Skill</strong> es un <strong>paquete reutilizable de instrucciones operativas</strong> definido dentro de un archivo <code>SKILL.md</code>. Ese archivo incluye un encabezado en formato <strong>YAML</strong> (<em>frontmatter</em>) con dos campos obligatorios: <code>name</code> y <code>description</code>.</p>
+  <p>Gracias a estas habilidades, los agentes de IA pueden realizar tareas altamente especializadas y adaptadas a los estándares de un equipo o proyecto concreto.</p>
+
+  <h3>Los tres casos de uso principales de la documentación oficial</h3>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Caso de uso</th><th>Qué permite</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Generación de notas de lanzamiento</strong> (<em>release notes</em>)</td><td>Extraer e interpretar el historial de transacciones de Git para redactar resúmenes estructurados de cambios.</td></tr>
+        <tr><td><strong>Creación de Solicitudes de Extracción</strong> (<em>Pull Requests</em>)</td><td>Formatear y enviar PRs siguiendo estrictamente las convenciones estandarizadas del equipo de desarrollo.</td></tr>
+        <tr><td><strong>Integración con herramientas externas</strong></td><td>Permitir que los agentes interactúen con servicios y plataformas de terceros como Linear, Notion, entre otros.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>Estas habilidades pueden ser descubiertas, inspeccionadas e instaladas desde el directorio centralizado en <strong>skills.sh</strong>.</p>
+
+  <h2 id="c-glosario">4. Glosario inicial de conceptos clave</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Término</th><th>Definición y rol en Vercel Skills</th></tr></thead>
+      <tbody>
+        <tr><td><strong>CLI</strong></td><td><em>Command Line Interface</em>. Herramienta ejecutable desde la terminal utilizada para instalar, buscar, actualizar y gestionar habilidades.</td></tr>
+        <tr><td><strong>Node.js</strong></td><td>Entorno de ejecución para JavaScript/TypeScript en el servidor. Requisito básico obligatorio para ejecutar la CLI de Vercel Skills.</td></tr>
+        <tr><td><strong>npx</strong></td><td>Ejecutor de paquetes incluido en Node.js que permite ejecutar herramientas CLI directamente desde registros o repositorios sin instalarlas globalmente de forma permanente.</td></tr>
+        <tr><td><strong>Git</strong></td><td>Sistema de control de versiones utilizado internamente por <code>npx skills</code> para clonar repositorios y descargar conjuntos de habilidades.</td></tr>
+        <tr><td><strong>YAML</strong></td><td>Formato de serialización de datos legible por humanos utilizado en el encabezado (<em>frontmatter</em>) del archivo <code>SKILL.md</code> para definir metadatos.</td></tr>
+        <tr><td><strong>Symlinks</strong></td><td>Enlaces simbólicos en el sistema de archivos que conectan una ubicación centralizada de habilidades con las carpetas específicas de cada agente.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <strong>Conexión con el siguiente paso</strong>
+    Una vez comprendida la base teórica y la arquitectura del ecosistema, el siguiente paso práctico es verificar que el entorno de desarrollo local cumpla con los requisitos técnicos necesarios para ejecutar la CLI.
+  </div>
+
+  <h2 id="c-requisitos">5. Requisitos previos del sistema</h2>
+  <p>Para garantizar un funcionamiento correcto de la CLI de <code>skills</code>, el sistema operativo debe cumplir estrictamente con estas dependencias:</p>
+  <ol>
+    <li><strong>Node.js:</strong> se requiere de manera obligatoria la versión <strong>22.20 o superior</strong>.</li>
+    <li><strong>npx:</strong> incluido por defecto con la instalación de Node.js.</li>
+    <li><strong>Git:</strong> debe estar instalado y accesible globalmente en la variable de entorno del sistema.</li>
+  </ol>
+
+  <p>Para verificar si el entorno cuenta con las versiones adecuadas, ejecuta los siguientes comandos en la terminal:</p>
+  <pre><code># Verificar la versión de Node.js (debe ser &gt;= 22.20)
+node -v
+
+# Verificar la versión de Git
+git --version</code></pre>
+
+  <h2 id="c-auth">6. Autenticación para repositorios privados y API de GitHub</h2>
+  <p>La CLI utiliza una jerarquía de autenticación estructurada para resolver el acceso a repositorios tanto públicos como privados.</p>
+
+  <h3>6.1. Credenciales para accesos HTTPS y shorthand (<code>owner/repo</code>)</h3>
+  <ol>
+    <li><strong>Credenciales Git estándar:</strong> la CLI intenta primero utilizar el <em>Git credential helper</em> configurado localmente en el sistema.</li>
+    <li><strong>GitHub CLI (<code>gh</code>):</strong> si el paso anterior falla y la herramienta GitHub CLI está instalada y autenticada, ejecuta la clonación mediante <code>gh repo clone</code> o llamadas a la API mediante <code>gh api</code>.</li>
+    <li><strong>Fallback a SSH:</strong> si fallan las opciones de HTTPS, la CLI intenta autenticarse mediante protocolos SSH (<code>git@github.com:...</code> o <code>ssh://git@...</code>).</li>
+  </ol>
+
+  <h3>6.2. Evaluación de la API de GitHub para búsqueda de árboles (<em>Tree Lookups</em>)</h3>
+  <ol>
+    <li>Intenta primero una solicitud anónima a la API de GitHub.</li>
+    <li>Si es rechazada por límites de tasa o permisos, evalúa las variables de entorno <code>GITHUB_TOKEN</code> o <code>GH_TOKEN</code>.</li>
+    <li>Si no existen tokens en el entorno, ejecuta de forma delegada <code>gh api</code>.</li>
+    <li>Si el acceso a la API sigue fallando, las comprobaciones de actualización recurren a una clonación Git autenticada.</li>
+  </ol>
+
+  <div class="okbox">
+    <strong>Garantía de seguridad e integridad de credenciales</strong>
+    La CLI <strong>nunca</strong> ejecuta <code>gh auth token</code> ni copia credenciales almacenadas dentro del proceso de Node.js. Las llamadas delegadas a <code>gh api</code> devuelven únicamente la respuesta obtenida, sin exponer ni imprimir credenciales en pantalla.
+  </div>
+
+  <h2 id="c-deteccion">7. Detección automática de agentes compatibles</h2>
+  <p>Al ejecutar comandos de instalación por primera vez, la CLI realiza un escaneo del sistema local para identificar cuáles de los más de 75 agentes compatibles se encuentran instalados en el equipo del usuario.</p>
+  <div class="note">
+    <strong>Nota</strong>
+    Si la CLI no detecta ningún agente activo durante la ejecución, mostrará automáticamente un <strong>menú interactivo</strong> solicitando al usuario que seleccione manualmente los agentes de IA a los que desea vincular las habilidades.
+  </div>
+
+  <h2 id="c-scopes">8. Ámbitos de aplicación (<em>scopes</em>): proyecto vs. global</h2>
+  <p>Al instalar habilidades se puede elegir entre un ámbito local restringido a un proyecto específico o un ámbito global disponible para todo el usuario en el sistema.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Ámbito</th><th>Flag</th><th>Ruta predeterminada</th><th>Caso de uso recomendado</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Proyecto</strong></td><td><em>(Predeterminado)</em></td><td><code>.//skills/</code></td><td>Habilidades específicas compartidas con el equipo de desarrollo e incluidas en el control de versiones (Git).</td></tr>
+        <tr><td><strong>Global</strong></td><td><code>-g</code> / <code>--global</code></td><td><code>~//skills/</code></td><td>Herramientas personales de utilidad general disponibles para el desarrollador en cualquier proyecto local.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="warnbox">
+    <strong>Nota de fidelidad al documento fuente</strong>
+    El documento original muestra estas rutas con una barra duplicada (<code>.//skills/</code> y <code>~//skills/</code>), lo que parece un artefacto de formato. Se reproducen tal cual para no alterar la fuente. La salida de ejemplo del propio documento sí muestra <code>~/.skills/canonical/</code> como almacén canónico de las habilidades.
+  </div>
+
+  <h2 id="c-metodos">9. Métodos de instalación: enlace simbólico vs. copia directa</h2>
+  <p>Durante la instalación interactiva o mediante flags, la CLI ofrece dos mecanismos para posicionar las habilidades dentro de las rutas de los agentes.</p>
+
+  <div class="grid two">
+    <div class="card tight">
+      <h3>Enlace simbólico (<em>symlink</em>) — método recomendado</h3>
+      <p class="small"><strong>Qué hace:</strong> crea un enlace simbólico desde el directorio de cada agente hacia una copia canónica centralizada en el sistema.</p>
+      <p class="small"><strong>Ventajas:</strong> funciona como una fuente única de verdad (<em>single source of truth</em>), permitiendo actualizar la habilidad una sola vez para que el cambio se refleje automáticamente en todos los agentes configurados.</p>
+      <p class="small" style="margin-bottom:0"><strong>Cuándo usarlo:</strong> entornos de desarrollo locales donde se utilizan múltiples agentes de IA de forma simultánea.</p>
+    </div>
+    <div class="card tight">
+      <h3>Copia directa (<code>--copy</code>)</h3>
+      <p class="small"><strong>Qué hace:</strong> copia físicamente los archivos dentro de la estructura de cada agente, de manera independiente.</p>
+      <p class="small"><strong>Ventajas:</strong> no depende de enlaces simbólicos.</p>
+      <p class="small" style="margin-bottom:0"><strong>Cuándo usarlo:</strong> sistemas de archivos o entornos corporativos donde los enlaces simbólicos están restringidos por políticas de seguridad o no son soportados por el sistema operativo.</p>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Conexión con el siguiente paso</strong>
+    Habiendo definido los ámbitos y métodos de almacenamiento, la siguiente sección aborda en detalle el repertorio completo de comandos que ofrece la CLI.
+  </div>
+
+  <h2 id="c-comparativa">10. Comparativa: Vercel Skills vs. MCP vs. reglas directas</h2>
+  <p>Es fundamental comprender la frontera de responsabilidades entre estas tecnologías.</p>
+  <ul>
+    <li><strong>Model Context Protocol (MCP)</strong> es un protocolo de comunicación cliente-servidor diseñado para la <em>ejecución de herramientas y conexión a fuentes de datos externalizadas</em> (bases de datos, APIs de terceros, entornos de ejecución).</li>
+    <li><strong>Vercel Skills</strong> proporciona <em>instrucciones contextuales y prompts de flujo de trabajo estandarizados, portables y reutilizables</em> entre múltiples agentes.</li>
+    <li>Las <strong>reglas directas</strong> (<code>.cursorrules</code>, <code>CLAUDE.md</code>) son archivos de instrucciones locales acoplados a un software específico.</li>
+  </ul>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Criterio</th><th>Vercel Skills (npx skills)</th><th>MCP / Reglas directas</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Propósito principal</strong></td><td>Ecosistema abierto de habilidades e instrucciones ejecutables portables entre agentes.</td><td>MCP conecta herramientas y servidores de datos; las reglas directas definen instrucciones locales para un solo agente.</td></tr>
+        <tr><td><strong>Portabilidad</strong></td><td><strong>Alta:</strong> una única habilidad funciona en más de 75 agentes mediante el estándar <code>agentskills.io</code>.</td><td><strong>Baja:</strong> los archivos de reglas directas están acoplados al agente o IDE específico que los interpreta.</td></tr>
+        <tr><td><strong>Distribución y gestión</strong></td><td>Instalación, actualización y eliminación centralizada y automatizada vía CLI (<code>npx skills</code>).</td><td>Copia e inclusión manual de archivos en cada repositorio o configuración de entorno.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</section>
+
+<!-- ==================== PROCEDIMIENTO ==================== -->
+<section class="panel" id="panel-procedimiento" role="tabpanel" aria-labelledby="tab-procedimiento" tabindex="0">
+
+  <h1>Procedimiento paso a paso</h1>
+  <p class="lead">Cada paso indica <strong>objetivo</strong>, <strong>acción</strong>, <strong>por qué se hace</strong> y <strong>resultado esperado</strong>. Haz una sola cosa cada vez y comprueba el resultado antes de continuar.</p>
+
+  <div class="note">
+    <strong>Antes de empezar</strong>
+    Todos los comandos se escriben en una <strong>terminal</strong> (en Windows: PowerShell o Símbolo del sistema; en macOS/Linux: Terminal) y se ejecutan pulsando <span class="kbd">Enter</span>. No escribas el símbolo <code>$</code> ni <code>#</code>: en los ejemplos, <code>#</code> indica un comentario explicativo.
+  </div>
+
+  <!-- PASO 0 -->
+  <div class="step">
+    <span class="step-n">Paso 0</span>
+    <h3>Abrir la terminal en la carpeta de tu proyecto</h3>
+    <p><strong>Objetivo:</strong> situarte en el lugar correcto antes de ejecutar nada.</p>
+    <p><strong>Por qué importa:</strong> el ámbito de proyecto (el predeterminado) instala las habilidades <em>relativas a la carpeta actual</em>. Si abres la terminal en otro sitio, las habilidades acabarán en un proyecto equivocado.</p>
+    <ol>
+      <li>Abre la carpeta de tu proyecto en el explorador de archivos.</li>
+      <li>Haz clic derecho sobre un espacio vacío de la carpeta.</li>
+      <li>Elige «Abrir en Terminal» (Windows) o «Nuevo terminal en la carpeta» (macOS).</li>
+    </ol>
+    <div class="result"><strong>Resultado esperado:</strong> se abre una ventana de terminal cuyo texto termina en el nombre de tu carpeta de proyecto.</div>
+  </div>
+
+  <!-- PASO 1 -->
+  <div class="step">
+    <span class="step-n">Paso 1</span>
+    <h3>Verificar Node.js y Git</h3>
+    <p><strong>Objetivo:</strong> confirmar que el entorno cumple los requisitos mínimos.</p>
+    <p><strong>Por qué importa:</strong> sin Node.js 22.20 o superior, y sin Git accesible globalmente, la CLI no funcionará correctamente.</p>
+    <ol>
+      <li>Escribe <code>node -v</code> y pulsa <span class="kbd">Enter</span>.</li>
+      <li>Escribe <code>git --version</code> y pulsa <span class="kbd">Enter</span>.</li>
+    </ol>
+    <pre><code>node -v
+git --version</code></pre>
+    <div class="result"><strong>Resultado esperado:</strong> la primera orden imprime un número de versión igual o superior a <code>v22.20.x</code>. La segunda imprime algo como <code>git version 2.x.x</code>.</div>
+    <details>
+      <summary>¿Y si sale «no se reconoce como un comando»?</summary>
+      <div class="details-body">
+        <p>Significa que Node.js o Git no están instalados, o que no están en el <em>PATH</em> del sistema. Instálalos desde sus sitios oficiales, cierra la terminal y vuelve a abrirla. Después repite el paso 1.</p>
+        <p style="margin-bottom:0">Si la versión de Node.js es inferior a 22.20, actualízala antes de continuar.</p>
+      </div>
+    </details>
+  </div>
+
+  <!-- PASO 2 -->
+  <div class="step">
+    <span class="step-n">Paso 2</span>
+    <h3>Buscar habilidades con <code>find</code></h3>
+    <p><strong>Objetivo:</strong> descubrir qué habilidades existen antes de instalar nada.</p>
+    <p><strong>Por qué importa:</strong> <code>find</code> explora catálogos alojados en la plataforma <strong>skills.sh</strong> o en repositorios específicos de usuarios y organizaciones.</p>
+    <ol>
+      <li>Ejecuta el comando de búsqueda interactiva (interfaz de selección estilo <em>fzf</em>).</li>
+      <li>O busca por palabra clave concreta.</li>
+      <li>O busca globalmente dentro de un usuario u organización.</li>
+    </ol>
+    <pre><code># Búsqueda interactiva basada en interfaz de selección estilo fzf
+npx skills find
+
+# Búsqueda por palabra clave específica
+npx skills find typescript
+
+# Búsqueda global en repositorios pertenecientes a un usuario u organización
+npx skills find react --owner vercel</code></pre>
+    <div class="result"><strong>Resultado esperado:</strong> aparece una lista de habilidades coincidentes (o un selector interactivo si no se especifica palabra clave).</div>
+  </div>
+
+  <!-- PASO 3 -->
+  <div class="step">
+    <span class="step-n">Paso 3</span>
+    <h3>Inspeccionar un catálogo sin instalar</h3>
+    <p><strong>Objetivo:</strong> ver qué contiene un repositorio antes de tocar tu proyecto.</p>
+    <p><strong>Por qué importa:</strong> la bandera <code>-l</code> / <code>--list</code> muestra el catálogo de habilidades disponibles en la fuente <strong>sin instalarlas</strong>.</p>
+    <pre><code>npx skills add vercel-labs/agent-skills --list</code></pre>
+    <div class="result"><strong>Resultado esperado:</strong> un listado con el nombre y la descripción de cada habilidad disponible en ese repositorio. Nada se instala.</div>
+  </div>
+
+  <!-- PASO 4 -->
+  <div class="step">
+    <span class="step-n">Paso 4</span>
+    <h3>Instalar una habilidad con <code>add</code></h3>
+    <p><strong>Objetivo:</strong> importar la habilidad elegida y vincularla a los agentes que uses.</p>
+    <p><strong>Por qué importa:</strong> <code>add</code> es el motor principal de importación y acepta orígenes muy distintos.</p>
+
+    <h4>Formatos de origen admitidos</h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Formato de origen</th><th>Ejemplo de comando</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Shorthand de GitHub</strong></td><td><code>npx skills add vercel-labs/agent-skills</code></td></tr>
+          <tr><td><strong>URL completa de GitHub</strong></td><td><code>npx skills add https://github.com/vercel-labs/agent-skills</code></td></tr>
+          <tr><td><strong>Ruta a un subdirectorio</strong></td><td><code>npx skills add https://github.com/vercel-labs/agent-skills/tree/main/skills/web-design-guidelines</code></td></tr>
+          <tr><td><strong>GitLab URL</strong></td><td><code>npx skills add https://gitlab.com/org/repo</code></td></tr>
+          <tr><td><strong>Azure Repos</strong></td><td><code>npx skills add https://dev.azure.com/org/project/_git/repo</code></td></tr>
+          <tr><td><strong>Azure Repos con ruta/versión</strong></td><td><code>npx skills add https://dev.azure.com/org/project/_git/repo?path=/skills/web-design&amp;version=GBmain</code></td></tr>
+          <tr><td><strong>URL de Git pura (SSH)</strong></td><td><code>npx skills add git@github.com:vercel-labs/agent-skills.git</code></td></tr>
+          <tr><td><strong>Ruta local</strong></td><td><code>npx skills add ./my-local-skills</code></td></tr>
+          <tr><td><strong>URL de descarga directa</strong></td><td><code>npx skills add https://example.com/download/my-skill</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <strong>Diferencia técnica entre <code>--skill</code> y <code>@</code></strong>
+      En el comando <code>add</code>, la selección explícita de habilidades dentro de un repositorio se realiza mediante la bandera <code>-s</code> o <code>--skill</code> (por ejemplo <code>npx skills add vercel-labs/agent-skills --skill web-design-guidelines</code>). El delimitador <code>@</code> (por ejemplo <code>owner/repo@skill-name</code>) es una sintaxis abreviada utilizada prioritariamente por el comando <code>use</code> para identificar y resolver una habilidad específica dentro de una fuente, en ejecuciones efímeras.
+    </div>
+
+    <h4>Banderas y opciones avanzadas de <code>add</code></h4>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Opción / Flag</th><th>Descripción</th></tr></thead>
+        <tbody>
+          <tr><td><code>-g</code>, <code>--global</code></td><td>Instala en el directorio de usuario global (<code>~/</code>) en lugar del proyecto actual.</td></tr>
+          <tr><td><code>-a</code>, <code>--agent</code></td><td>Especifica los agentes destino (por ejemplo <code>claude-code</code>, <code>cursor</code>). Utiliza <code>'*'</code> para todos.</td></tr>
+          <tr><td><code>-s</code>, <code>--skill</code></td><td>Especifica el nombre exacto de la habilidad a instalar. Utiliza <code>'*'</code> para todas.</td></tr>
+          <tr><td><code>-l</code>, <code>--list</code></td><td>Muestra el catálogo de habilidades disponibles en la fuente sin instalarlas.</td></tr>
+          <tr><td><code>--copy</code></td><td>Fuerza la copia física de los archivos evitando la creación de enlaces simbólicos (<em>symlinks</em>).</td></tr>
+          <tr><td><code>-y</code>, <code>--yes</code></td><td>Omite todas las preguntas interactivas de confirmación.</td></tr>
+          <tr><td><code>--all</code></td><td>Instala todas las habilidades encontradas hacia todos los agentes detectados sin <em>prompts</em>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h4>Ejemplos prácticos de combinación de parámetros</h4>
+    <pre><code># 1. Combinación compleja: instalación global, no interactiva, con copia física para un agente específico
+npx skills add vercel-labs/agent-skills --skill web-design-guidelines -g -a claude-code --copy -y
+
+# 2. Instalar una habilidad cuyo nombre contiene espacios (requiere comillas obligatorias)
+npx skills add owner/repo --skill "Convex Best Practices"
+
+# 3. Instalación de múltiples habilidades hacia múltiples agentes de forma explícita
+npx skills add vercel-labs/agent-skills -s frontend-design -s skill-creator -a claude-code -a opencode
+
+# 4. Instalar todas las habilidades de un repositorio hacia todos los agentes del sistema
+npx skills add vercel-labs/agent-skills --all
+
+# 5. Instalar habilidades específicas filtrando agentes mediante el comodín '*'
+npx skills add vercel-labs/agent-skills --skill frontend-design --agent '*'</code></pre>
+    <div class="result"><strong>Resultado esperado:</strong> la CLI descarga la fuente, crea los enlaces (o copias) en las carpetas de cada agente y muestra un mensaje de éxito por cada agente vinculado.</div>
+  </div>
+
+  <!-- PASO 5 -->
+  <div class="step">
+    <span class="step-n">Paso 5</span>
+    <h3>Verificar lo instalado con <code>list</code></h3>
+    <p><strong>Objetivo:</strong> confirmar la ruta exacta donde ha quedado cada habilidad.</p>
+    <p><strong>Por qué importa:</strong> si un agente no responde a la habilidad, casi siempre se debe a que se instaló en una ruta que ese agente no lee.</p>
+    <ol>
+      <li>Lista las habilidades instaladas localmente en el proyecto actual.</li>
+      <li>O lista únicamente las instaladas a nivel global.</li>
+      <li>O filtra el listado por agentes concretos.</li>
+    </ol>
+    <pre><code># --- LISTAR HABILIDADES (alias: ls) ---
+# Listar habilidades instaladas localmente en el proyecto actual
+npx skills list
+
+# Listar únicamente habilidades instaladas a nivel global
+npx skills ls -g
+
+# Filtrar el listado por agentes específicos
+npx skills ls -a claude-code -a cursor</code></pre>
+    <div class="result"><strong>Resultado esperado:</strong> un árbol de rutas con el nombre de cada habilidad y, entre paréntesis, si es un <em>symlink</em> y hacia dónde apunta.</div>
+  </div>
+
+  <!-- PASO 6 -->
+  <div class="step">
+    <span class="step-n">Paso 6</span>
+    <h3>Probar sin instalar: uso efímero con <code>use</code></h3>
+    <p><strong>Objetivo:</strong> ejecutar una habilidad al vuelo sin alterar la configuración del entorno local.</p>
+    <p><strong>Por qué importa:</strong> <code>use</code> escribe la habilidad seleccionada en un directorio temporal y emite el <em>prompt</em> resultante directamente hacia <code>stdout</code>. Nada permanente queda en tu proyecto.</p>
+    <ol>
+      <li>Genera el prompt con la sintaxis de delimitación <code>@</code> y canalízalo (<em>pipe</em>) a Claude CLI.</li>
+      <li>O inicia un agente interactivo especificando habilidad y agente mediante banderas.</li>
+    </ol>
+    <pre><code># Generar el prompt con la sintaxis de delimitación '@' y canalizarlo (pipe) a Claude CLI
+npx skills use vercel-labs/agent-skills@web-design-guidelines | claude
+
+# Iniciar un agente interactivo especificando habilidad y agente mediante banderas
+npx skills use vercel-labs/agent-skills --skill web-design-guidelines --agent claude-code</code></pre>
+    <div class="result"><strong>Resultado esperado:</strong> la CLI indica que ha escrito la habilidad en un directorio temporal y lanza el agente con ese contexto de prompt.</div>
+  </div>
+
+  <!-- PASO 7 -->
+  <div class="step">
+    <span class="step-n">Paso 7</span>
+    <h3>Actualizar habilidades con <code>update</code></h3>
+    <p><strong>Objetivo:</strong> traer la última versión de las habilidades ya instaladas.</p>
+    <p><strong>Por qué importa:</strong> con el método de enlace simbólico, actualizar una sola vez propaga el cambio a todos los agentes vinculados.</p>
+    <pre><code># --- ACTUALIZAR HABILIDADES ---
+# Actualizar interactivamente todas las habilidades instaladas
+npx skills update
+
+# Actualizar habilidades específicas por su nombre
+npx skills update frontend-design web-design-guidelines
+
+# Actualizar forzando ámbito global (-g) o ámbito de proyecto (-p)
+npx skills update -g
+npx skills update -p
+
+# Modo no interactivo (auto-detecta: proyecto si existe directorio de proyecto, si no global)
+npx skills update -y</code></pre>
+    <div class="result"><strong>Resultado esperado:</strong> un resumen por habilidad indicando si se ha actualizado o si ya estaba al día.</div>
+  </div>
+
+  <!-- PASO 8 -->
+  <div class="step">
+    <span class="step-n">Paso 8</span>
+    <h3>Eliminar habilidades con <code>remove</code> / <code>rm</code></h3>
+    <p><strong>Objetivo:</strong> desvincular una habilidad de un agente concreto o retirar todas las globales.</p>
+    <p><strong>Por qué importa:</strong> eliminar es la operación más delicada; conviene hacerla de forma dirigida, no masiva, salvo que estés seguro.</p>
+    <pre><code># --- ELIMINAR HABILIDADES (alias: rm) ---
+# Eliminar una habilidad específica de un agente determinado
+npx skills remove web-design-guidelines --agent claude-code
+
+# Eliminar todas las habilidades instaladas a nivel global de forma no interactiva
+npx skills rm --all -g</code></pre>
+    <div class="result"><strong>Resultado esperado:</strong> confirmación de qué habilidades se han eliminado y de qué agentes.</div>
+  </div>
+
+  <!-- PASO 9 -->
+  <div class="step">
+    <span class="step-n">Paso 9</span>
+    <h3>Crear una plantilla con <code>init</code></h3>
+    <p><strong>Objetivo:</strong> generar la estructura base de tu propia habilidad.</p>
+    <p><strong>Por qué importa:</strong> evita empezar desde un archivo vacío y reduce los errores de formato YAML.</p>
+    <ol>
+      <li>Para crear un archivo de plantilla <code>SKILL.md</code> en la raíz del directorio actual, ejecuta <code>npx skills init</code>.</li>
+      <li>Para crear un subdirectorio con una nueva plantilla lista para editar, pasa un nombre: <code>npx skills init mi-primera-skill</code>.</li>
+    </ol>
+    <pre><code># Crear un archivo de plantilla SKILL.md en la raíz del directorio actual
+npx skills init
+
+# Crear un subdirectorio con una nueva plantilla de habilidad lista para editar
+npx skills init mi-primera-skill</code></pre>
+    <div class="result"><strong>Resultado esperado:</strong> aparece un mensaje de plantilla inicializada y, en la segunda variante, una carpeta <code>mi-primera-skill/</code> con un archivo <code>SKILL.md</code> dentro.</div>
+  </div>
+
+  <!-- PASO 10 -->
+  <div class="step">
+    <span class="step-n">Paso 10</span>
+    <h3>Editar el archivo <code>SKILL.md</code></h3>
+    <p><strong>Objetivo:</strong> convertir la plantilla en una habilidad real y comprensible para el agente.</p>
+    <p><strong>Por qué importa:</strong> es el corazón de todo el sistema. Un archivo mal formado no será detectado.</p>
+
+    <h4>El estándar Agent Skills</h4>
+    <p>Todas las habilidades de este ecosistema se construyen bajo la <strong>especificación Agent Skills</strong> (accesible en <code>agentskills.io</code>). Este estándar garantiza que el cuerpo de instrucciones sea perfectamente legible y ejecutable por cualquier modelo o agente de IA, sin importar su arquitectura subyacente.</p>
+
+    <h4>Estructura del encabezado (YAML frontmatter)</h4>
+    <p>El archivo <code>SKILL.md</code> debe comenzar de forma obligatoria, <strong>en la primera línea</strong>, con un bloque de encabezado YAML delimitado por <code>---</code>.</p>
+    <pre><code>---
+name: nombre-de-la-skill
+description: Explicación breve de lo que hace la habilidad y cuándo activarla
+metadata:
+  internal: false
+---</code></pre>
+    <ul>
+      <li><strong><code>name</code> (obligatorio):</strong> identificador único de la habilidad. Debe estar escrito estrictamente en minúsculas y separado por guiones (formato <em>kebab-case</em>).</li>
+      <li><strong><code>description</code> (obligatorio):</strong> descripción clara de las capacidades de la habilidad. Este texto es evaluado por el agente de IA para determinar cuándo debe activar la habilidad.</li>
+      <li><strong><code>metadata.internal</code> (opcional):</strong> si se establece en <code>true</code>, oculta la habilidad en las búsquedas y exploraciones normales. Solo se mostrará e instalará cuando la variable de entorno <code>INSTALL_INTERNAL_SKILLS=1</code> esté presente en la sesión.</li>
+    </ul>
+
+    <h4>Estructura canónica recomendada del cuerpo</h4>
+    <pre><code>---
+name: guias-de-estilo
+description: Aplica las reglas de diseño y arquitectura de código del proyecto.
+---
+
+# Guías de Estilo de Código
+
+Instrucciones generales que el agente debe seguir obligatoriamente cuando esta habilidad esté activa.
+
+## When to Use
+
+Describa aquí los escenarios exactos o desencadenantes en los que el agente debe aplicar esta habilidad (ej. al crear componentes React o al escribir pruebas unitarias).
+
+## Steps
+
+1. Verificar que los nombres de variables sigan el formato camelCase.
+2. Comprobar que no existan tipos 'any' explícitos en TypeScript.
+3. Asegurar la inclusión de pruebas unitarias correspondientes.</code></pre>
+
+    <div class="result"><strong>Resultado esperado:</strong> un archivo con encabezado YAML válido, un título, una sección <code>When to Use</code> y una sección <code>Steps</code> con pasos numerados.</div>
+  </div>
+
+  <!-- PASO 11 -->
+  <div class="step">
+    <span class="step-n">Paso 11</span>
+    <h3>Instalar tu propia habilidad local</h3>
+    <p><strong>Objetivo:</strong> vincular la habilidad que acabas de crear a tus agentes.</p>
+    <p><strong>Por qué importa:</strong> crear el archivo no basta; hay que instalarlo para que los agentes lo lean.</p>
+    <pre><code>npx skills add ./mi-primera-skill -a '*' -y</code></pre>
+    <div class="result"><strong>Resultado esperado:</strong> mensajes de instalación por cada agente detectado, indicando la ruta de destino.</div>
+  </div>
+
+  <h2 id="p-avanzado">Configuración avanzada: compatibilidad por agente</h2>
+  <p>Aunque las instrucciones básicas en Markdown son universales, algunas características avanzadas dependen del soporte específico que proporcione cada agente según la especificación oficial.</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Característica avanzada</th><th>Propósito</th><th>Soportado en</th><th>No soportado en</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Instrucciones básicas</strong></td>
+          <td>Interpretación estándar de prompts y pasos Markdown.</td>
+          <td>Todos los agentes (Claude Code, Cursor, OpenCode, Codex, GitHub Copilot, Kiro CLI, etc.)</td>
+          <td>Ninguno</td>
+        </tr>
+        <tr>
+          <td><code>allowed-tools</code></td>
+          <td>Restringe o autoriza las herramientas ejecutables por la IA.</td>
+          <td>OpenCode, OpenHands, Claude Code, Cline, CodeBuddy, Codex, Command Code, Cursor, Antigravity, Roo Code, GitHub Copilot, Amp, OpenClaw, Neovate, Pi, Qoder</td>
+          <td>Kiro CLI, Zencoder</td>
+        </tr>
+        <tr>
+          <td><code>context: fork</code></td>
+          <td>Aísla la ejecución en un subcontexto bifurcado.</td>
+          <td>Claude Code</td>
+          <td>OpenCode, OpenHands, Cline, CodeBuddy, Codex, Command Code, Kiro CLI, Cursor, Antigravity, Roo Code, GitHub Copilot, Amp, OpenClaw, Neovate, Pi, Qoder, Zencoder</td>
+        </tr>
+        <tr>
+          <td><strong>Hooks</strong></td>
+          <td>Ciclos de vida y eventos de ejecución automatizados.</td>
+          <td>Claude Code, Cline, Kiro CLI</td>
+          <td>OpenCode, OpenHands, CodeBuddy, Codex, Command Code, Cursor, Antigravity, Roo Code, GitHub Copilot, Amp, OpenClaw, Neovate, Pi, Qoder, Zencoder</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="p-descubrimiento">Descubrimiento de habilidades y layouts de catálogo</h2>
+  <p>Al escanear un repositorio, la CLI inspecciona las rutas hasta una <strong>profundidad máxima de 3 niveles</strong> en esquemas planos o de catálogo.</p>
+
+  <h3>Patrones de estructura soportados</h3>
+  <ul>
+    <li><strong>Diseño plano (nivel 1):</strong> <code>skills/&lt;nombre&gt;/SKILL.md</code></li>
+    <li><strong>Catálogo de 1 categoría (nivel 2):</strong> <code>skills/&lt;categoría&gt;/&lt;nombre&gt;/SKILL.md</code></li>
+    <li><strong>Catálogo de 2 categorías (nivel 3):</strong> <code>skills/&lt;categoría&gt;/&lt;subcategoría&gt;/&lt;nombre&gt;/SKILL.md</code></li>
+  </ul>
+
+  <h3>Carpetas contenedoras evaluadas por defecto</h3>
+  <ul>
+    <li>Directorio raíz (si contiene directamente un archivo <code>SKILL.md</code>).</li>
+    <li>Carpetas estándar: <code>skills/</code>, <code>skills/.curated/</code>, <code>skills/.experimental/</code>, <code>skills/.system/</code>.</li>
+    <li>Rutas específicas de agentes: <code>.agents/skills/</code>, <code>.claude/skills/</code>, <code>.cursor/skills/</code>, <code>.kiro/skills/</code>, <code>data/skills/</code>, <code>.autohand/skills/</code>, <code>.augment/skills/</code>, <code>.bob/skills/</code>, <code>.codebuddy/skills/</code>, <code>.commandcode/skills/</code>, <code>.continue/skills/</code>, <code>.devin/skills/</code>, <code>agent/skills/</code>, <code>.goose/skills/</code>, <code>.hermes/skills/</code>, <code>.openhands/skills/</code>, <code>.roo/skills/</code>, <code>.windsurf/skills/</code>, <code>.zencoder/skills/</code>, entre otras.</li>
+  </ul>
+
+  <h3>Regla de ensombrecimiento (<em>shadowing</em>)</h3>
+  <p>Un archivo <code>SKILL.md</code> descubierto en un nivel superficial <strong>anula o enmascara</strong> cualquier habilidad anidada a mayor profundidad que comparta exactamente el mismo nombre.</p>
+
+  <h3>Otras opciones de descubrimiento</h3>
+  <ul>
+    <li><strong><code>--full-depth</code>:</strong> permite forzar la búsqueda de archivos <code>SKILL.md</code> ubicados fuera de las carpetas contenedoras estándar (por ejemplo, dentro de directorios como <code>examples/</code> o <code>tests/</code>).</li>
+    <li><strong>Manifiestos de plugins:</strong> si existen archivos <code>.claude-plugin/marketplace.json</code> o <code>.claude-plugin/plugin.json</code>, las habilidades declaradas en ellos son descubiertas respetando la ruta definida en la propiedad <code>pluginRoot</code>. Estas rutas declaradas <strong>no están sujetas</strong> al límite de 3 niveles de profundidad.</li>
+  </ul>
+
+  <h2 id="p-env">Variables de entorno fundamentales</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Variable de entorno</th><th>Valor sugerido</th><th>Descripción y efecto de control</th></tr></thead>
+      <tbody>
+        <tr><td><code>INSTALL_INTERNAL_SKILLS</code></td><td><code>1</code> o <code>true</code></td><td>Muestra e instala habilidades declaradas con <code>metadata.internal: true</code>.</td></tr>
+        <tr><td><code>DISABLE_TELEMETRY</code></td><td><code>1</code></td><td>Desactiva completamente el envío de telemetría de uso anónimo.</td></tr>
+        <tr><td><code>DO_NOT_TRACK</code></td><td><code>1</code></td><td>Mecanismo alternativo estándar para desactivar el rastreo de telemetría.</td></tr>
+        <tr><td><code>GITHUB_TOKEN</code></td><td>Token de GitHub</td><td>Proporciona acceso autenticado explícito a la API de GitHub para la CLI.</td></tr>
+        <tr><td><code>GH_TOKEN</code></td><td>Token de GitHub</td><td>Variable de respaldo (<em>fallback</em>) para la autenticación en la API de GitHub.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2 id="p-limites">Umbrales y límites de seguridad en descargas</h2>
+  <p>Para prevenir ataques de denegación de servicio o la extracción desproporcionada de paquetes maliciosos (<em>zip bombs</em>) al descargar fuentes desde URLs directas, la CLI aplica estas salvaguardas por defecto:</p>
+  <ul>
+    <li><strong>Límite máximo de descarga:</strong> 10 MiB (modificable con <code>SKILLS_DOWNLOAD_MAX_BYTES</code>).</li>
+    <li><strong>Límite máximo de extracción:</strong> 25 MiB (modificable con <code>SKILLS_EXTRACT_MAX_BYTES</code>).</li>
+    <li><strong>Límite de cantidad de archivos:</strong> 1000 archivos (modificable con <code>SKILLS_EXTRACT_MAX_FILES</code>).</li>
+  </ul>
+
+  <h2 id="p-telemetria">Auditoría de seguridad y telemetría</h2>
+  <p>La CLI recolecta datos anónimos de uso para mejorar la herramienta. <strong>No se recopila ninguna información personal del desarrollador.</strong></p>
+  <div class="warnbox">
+    <strong>Atención</strong>
+    Los identificadores de repositorios y habilidades en GitHub solo se transmiten a los servidores de telemetría si GitHub confirma <strong>positivamente</strong> que el repositorio es público. Para otros servidores o remotos Git (como GitLab o Azure DevOps), la visibilidad no se puede validar mediante la API de GitHub, por lo que los identificadores de instalación podrían incluirse en la telemetría general. Las solicitudes de auditoría de seguridad automatizada permanecen estrictamente limitadas a repositorios de GitHub confirmados como públicos.
+  </div>
+  <p>Para desactivar por completo cualquier transmisión de datos en la sesión actual de terminal:</p>
+  <pre><code>export DISABLE_TELEMETRY=1</code></pre>
+
+  <h2 id="p-rutas">Rutas de instalación por agente</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Nombre del agente</th><th>Identificador (<code>--agent</code>)</th><th>Ruta de proyecto (local)</th><th>Ruta global</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Claude Code</strong></td><td><code>claude-code</code></td><td><code>.claude/skills/</code></td><td><code>~/.claude/skills/</code></td></tr>
+        <tr><td><strong>Cursor</strong></td><td><code>cursor</code></td><td><code>.agents/skills/</code></td><td><code>~/.cursor/skills/</code></td></tr>
+        <tr><td><strong>GitHub Copilot</strong></td><td><code>github-copilot</code></td><td><code>.agents/skills/</code></td><td><code>~/.copilot/skills/</code></td></tr>
+        <tr><td><strong>Kiro CLI</strong></td><td><code>kiro-cli</code></td><td><code>.kiro/skills/</code></td><td><code>~/.kiro/skills/</code></td></tr>
+        <tr><td><strong>OpenCode</strong></td><td><code>opencode</code></td><td><code>.agents/skills/</code></td><td><code>~/.config/opencode/skills/</code></td></tr>
+        <tr><td><strong>Carpeta compartida</strong></td><td><code>cline</code>, <code>codex</code>, <code>fx</code>, <code>warp</code>, <code>zed</code></td><td><code>.agents/skills/</code></td><td><code>~/.agents/skills/</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Caso especial: Kiro CLI</h3>
+  <p>El agente Kiro CLI detecta y carga de forma automática las habilidades ubicadas en <code>.kiro/skills/</code> y <code>~/.kiro/skills/</code>. Sin embargo, si se utiliza un <strong>agente personalizado</strong> dentro de Kiro, es necesario declarar explícitamente el recurso dentro de su archivo de configuración <code>.kiro/agents/&lt;nombre&gt;.json</code>:</p>
+  <pre><code>{
+  "resources": [
+    "skill://.kiro/skills/**/SKILL.md"
+  ]
+}</code></pre>
+
+  <h3>Patrón estándar de carpeta compartida</h3>
+  <p>Agentes como <strong>Cursor</strong>, <strong>GitHub Copilot</strong>, <strong>OpenCode</strong>, <strong>Codex</strong>, <strong>Cline</strong>, <strong>Zed</strong> y <strong>Warp</strong> comparten el directorio estándar de proyecto <code>.agents/skills/</code>, lo que permite que una sola instalación local funcione simultáneamente para todos ellos sin duplicar archivos.</p>
+
+  <h2 id="p-checklist">Lista de comprobación del procedimiento</h2>
+  <ul class="checklist">
+    <li><label class="check"><input type="checkbox" data-ck="p1"><span>He abierto la terminal en la carpeta correcta del proyecto.</span></label></li>
+    <li><label class="check"><input type="checkbox" data-ck="p2"><span><code>node -v</code> devuelve una versión igual o superior a 22.20.</span></label></li>
+    <li><label class="check"><input type="checkbox" data-ck="p3"><span><code>git --version</code> responde correctamente.</span></label></li>
+    <li><label class="check"><input type="checkbox" data-ck="p4"><span>He inspeccionado el catálogo con <code>--list</code> antes de instalar.</span></label></li>
+    <li><label class="check"><input type="checkbox" data-ck="p5"><span>He instalado al menos una habilidad y <code>npx skills list</code> la muestra.</span></label></li>
+    <li><label class="check"><input type="checkbox" data-ck="p6"><span>Sé dónde ha quedado instalada (ruta exacta).</span></label></li>
+    <li><label class="check"><input type="checkbox" data-ck="p7"><span>He probado el modo efímero con <code>use</code>.</span></label></li>
+    <li><label class="check"><input type="checkbox" data-ck="p8"><span>He creado mi propio <code>SKILL.md</code> con encabezado YAML válido.</span></label></li>
+  </ul>
+
+</section>
+
+<!-- ==================== PRÁCTICA ==================== -->
+<section class="panel" id="panel-practica" role="tabpanel" aria-labelledby="tab-practica" tabindex="0">
+
+  <h1>Práctica guiada</h1>
+  <p class="lead">Dos proyectos completos. Las salidas de terminal que verás son las que el documento fuente presenta como <strong>simuladas</strong>: sirven para que sepas qué esperar, no son una transcripción de una ejecución real.</p>
+
+  <h2>Proyecto 1 — Instalación, exploración y uso de habilidades oficiales</h2>
+
+  <div class="step">
+    <span class="step-n">Paso 1</span>
+    <h3>Explorar el catálogo oficial sin instalar</h3>
+    <p><strong>Objetivo:</strong> ver qué ofrece el repositorio oficial de Vercel Labs.</p>
+    <p>Abre la terminal en la raíz de tu proyecto y ejecuta:</p>
+    <pre><code>npx skills add vercel-labs/agent-skills --list</code></pre>
+    <p><strong>Salida simulada en terminal (según el documento fuente):</strong></p>
+    <pre><code>✔ Fetched skill catalog from vercel-labs/agent-skills
+Available skills in vercel-labs/agent-skills:
+- web-design-guidelines: Best practices for modern web design and UI components
+- frontend-design: Guidelines for creating accessible React interfaces
+- release-notes: Automation prompt for creating changelogs from git history</code></pre>
+  </div>
+
+  <div class="step">
+    <span class="step-n">Paso 2</span>
+    <h3>Instalar una habilidad para agentes específicos</h3>
+    <p><strong>Objetivo:</strong> instalar <code>web-design-guidelines</code> en el ámbito del proyecto, vinculada solo a Claude Code y Cursor.</p>
+    <pre><code>npx skills add vercel-labs/agent-skills --skill web-design-guidelines -a claude-code -a cursor -y</code></pre>
+    <p><strong>Salida simulada en terminal (según el documento fuente):</strong></p>
+    <pre><code>✔ Downloaded vercel-labs/agent-skills
+✔ Installed "web-design-guidelines" to .claude/skills/web-design-guidelines (symlink)
+✔ Installed "web-design-guidelines" to .agents/skills/web-design-guidelines (symlink)
+Successfully installed 1 skill across 2 agents.</code></pre>
+  </div>
+
+  <div class="step">
+    <span class="step-n">Paso 3</span>
+    <h3>Probar la habilidad de forma efímera</h3>
+    <p><strong>Objetivo:</strong> comprobar el comportamiento sin modificar permanentemente los archivos locales.</p>
+    <pre><code>npx skills use vercel-labs/agent-skills --skill web-design-guidelines --agent claude-code</code></pre>
+    <p><strong>Salida simulada en terminal (según el documento fuente):</strong></p>
+    <pre><code>Wrote skill "web-design-guidelines" to temporary directory /tmp/skills-ef82a/
+Launching claude-code with prompt context...
+[Claude Code Session Initialized with Skill: web-design-guidelines]</code></pre>
+  </div>
+
+  <div class="step">
+    <span class="step-n">Paso 4</span>
+    <h3>Verificar la instalación</h3>
+    <p><strong>Objetivo:</strong> confirmar que las habilidades están en las rutas correctas del proyecto.</p>
+    <pre><code>npx skills list</code></pre>
+    <p><strong>Salida simulada en terminal (según el documento fuente):</strong></p>
+    <pre><code>Project Installed Skills (./):
+claude-code (.claude/skills/):
+└── web-design-guidelines (symlink -&gt; ~/.skills/canonical/web-design-guidelines)
+cursor (.agents/skills/):
+└── web-design-guidelines (symlink -&gt; ~/.skills/canonical/web-design-guidelines)</code></pre>
+  </div>
+
+  <h2>Proyecto 2 — Creación, pruebas y publicación de una habilidad personalizada</h2>
+
+  <div class="step">
+    <span class="step-n">Paso 1</span>
+    <h3>Inicializar la estructura de la habilidad</h3>
+    <p><strong>Objetivo:</strong> generar la plantilla base de una habilidad llamada <code>mi-primera-skill</code>.</p>
+    <pre><code>npx skills init mi-primera-skill</code></pre>
+    <p><strong>Salida simulada en terminal (según el documento fuente):</strong></p>
+    <pre><code>✔ Created mi-primera-skill/SKILL.md
+Template initialized successfully. You can now edit mi-primera-skill/SKILL.md.</code></pre>
+  </div>
+
+  <div class="step">
+    <span class="step-n">Paso 2</span>
+    <h3>Configurar el archivo <code>SKILL.md</code></h3>
+    <p><strong>Objetivo:</strong> escribir una habilidad real y verificable.</p>
+    <p>Abre <code>mi-primera-skill/SKILL.md</code> en tu editor y sustituye su contenido por este:</p>
+    <pre><code>---
+name: mi-primera-skill
+description: Revisa que el código cumpla con los estándares de documentación del equipo.
+---
+
+# Revisión de Documentación
+
+Esta habilidad asegura que todas las funciones exportadas cuenten con comentarios descriptivos.
+
+## When to Use
+
+Utilice esta habilidad cuando el usuario solicite revisar, refactorizar o crear nuevas funciones en el proyecto.
+
+## Steps
+
+1. Escanear los archivos modificados en el área de preparación (*staging*).
+2. Identificar funciones exportadas sin comentarios de encabezado.
+3. Añadir descripciones claras sobre los parámetros y valores de retorno.</code></pre>
+    <div class="result"><strong>Resultado esperado:</strong> el archivo empieza por <code>---</code> en la primera línea, contiene <code>name</code> y <code>description</code>, y el cuerpo incluye las secciones <em>When to Use</em> y <em>Steps</em>.</div>
+  </div>
+
+  <div class="step">
+    <span class="step-n">Paso 3</span>
+    <h3>Vincular la habilidad localmente a todos los agentes</h3>
+    <p><strong>Objetivo:</strong> instalar la habilidad recién creada desde la ruta local.</p>
+    <pre><code>npx skills add ./mi-primera-skill -a '*' -y</code></pre>
+    <p><strong>Salida simulada en terminal (según el documento fuente):</strong></p>
+    <pre><code>✔ Discovered local skill "mi-primera-skill" in ./mi-primera-skill
+✔ Installed "mi-primera-skill" to .claude/skills/mi-primera-skill (symlink)
+✔ Installed "mi-primera-skill" to .agents/skills/mi-primera-skill (symlink)
+Successfully installed 1 local skill to all detected agents.</code></pre>
+  </div>
+
+  <div class="step">
+    <span class="step-n">Paso 4</span>
+    <h3>Verificación final</h3>
+    <p><strong>Objetivo:</strong> comprobar que tu habilidad local aparece registrada.</p>
+    <pre><code>npx skills list</code></pre>
+    <p><strong>Salida simulada en terminal (según el documento fuente):</strong></p>
+    <pre><code>Project Installed Skills (./):
+claude-code (.claude/skills/):
+├── mi-primera-skill (symlink -&gt; ./mi-primera-skill)
+└── web-design-guidelines
+cursor (.agents/skills/):
+├── mi-primera-skill (symlink -&gt; ./mi-primera-skill)
+└── web-design-guidelines</code></pre>
+  </div>
+
+  <h2>Ejercicios con solución</h2>
+
+  <details>
+    <summary>Ejercicio 1 — Instalación global y silenciosa con copia física</summary>
+    <div class="details-body">
+      <p><strong>Enunciado:</strong> instala la habilidad <code>web-design-guidelines</code> del repositorio <code>vercel-labs/agent-skills</code> en el ámbito global, solo para <code>claude-code</code>, forzando copia física y sin preguntas interactivas.</p>
+      <p><strong>Solución:</strong></p>
+      <pre><code>npx skills add vercel-labs/agent-skills --skill web-design-guidelines -g -a claude-code --copy -y</code></pre>
+      <p style="margin-bottom:0"><strong>Por qué:</strong> <code>-g</code> aplica el ámbito global, <code>-a claude-code</code> restringe el agente, <code>--copy</code> evita los enlaces simbólicos y <code>-y</code> omite las confirmaciones. La habilidad se selecciona con <code>--skill</code>, no con <code>@</code> (el delimitador <code>@</code> es propio del comando <code>use</code>).</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Ejercicio 2 — Instalar una habilidad con espacios en el nombre</summary>
+    <div class="details-body">
+      <p><strong>Enunciado:</strong> instala la habilidad llamada <code>Convex Best Practices</code> desde <code>owner/repo</code>.</p>
+      <p><strong>Solución:</strong></p>
+      <pre><code>npx skills add owner/repo --skill "Convex Best Practices"</code></pre>
+      <p style="margin-bottom:0"><strong>Por qué:</strong> cuando el nombre contiene espacios, las comillas son obligatorias. Sin ellas, la terminal interpretaría cada palabra como un argumento distinto.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Ejercicio 3 — Ejecutar una habilidad sin dejar rastro</summary>
+    <div class="details-body">
+      <p><strong>Enunciado:</strong> prueba la habilidad <code>web-design-guidelines</code> de <code>vercel-labs/agent-skills</code> con el agente <code>claude-code</code> sin escribir archivos permanentes en el proyecto.</p>
+      <p><strong>Solución:</strong></p>
+      <pre><code>npx skills use vercel-labs/agent-skills --skill web-design-guidelines --agent claude-code</code></pre>
+      <p style="margin-bottom:0"><strong>Por qué:</strong> <code>use</code> escribe la habilidad en un directorio temporal y emite el prompt resultante, sin alterar la configuración del entorno local.</p>
+    </div>
+  </details>
+
+  <details>
+    <summary>Ejercicio 4 — Diagnosticar una habilidad que no se detecta</summary>
+    <div class="details-body">
+      <p><strong>Enunciado:</strong> has creado <code>mi-habilidad/SKILL.md</code> dentro de <code>examples/</code> y la CLI responde «No skills found». ¿Qué haces?</p>
+      <p><strong>Solución:</strong> la carpeta <code>examples/</code> no está entre las carpetas contenedoras estándar, y la CLI solo inspecciona hasta 3 niveles de profundidad en las rutas reconocidas. Añade la bandera <code>--full-depth</code> al comando para forzar la búsqueda fuera de esas carpetas:</p>
+      <pre><code>npx skills add ./examples --full-depth</code></pre>
+      <p style="margin-bottom:0">Antes de eso, verifica también que el encabezado YAML empiece en la primera línea y que contenga <code>name</code> y <code>description</code>.</p>
+    </div>
+  </details>
+
+  <h2>Lista de comprobación de la práctica</h2>
+  <ul class="checklist">
+    <li><label class="check"><input type="checkbox" data-ck="pr1"><span>He completado el Proyecto 1 y entiendo cada una de sus cuatro salidas.</span></label></li>
+    <li><label class="check"><input type="checkbox" data-ck="pr2"><span>He completado el Proyecto 2 y mi <code>SKILL.md</code> tiene un encabezado YAML válido.</span></label></li>
+    <li><label class="check"><input type="checkbox" data-ck="pr3"><span>Sé distinguir cuándo usar <code>--skill</code> y cuándo la sintaxis <code>@</code>.</span></label></li>
+    <li><label class="check"><input type="checkbox" data-ck="pr4"><span>He resuelto al menos tres de los cuatro ejercicios sin mirar la solución.</span></label></li>
+  </ul>
+
+</section>
+
+<!-- ==================== ERRORES ==================== -->
+<section class="panel" id="panel-errores" role="tabpanel" aria-labelledby="tab-errores" tabindex="0">
+
+  <h1>Diagnóstico de problemas y errores frecuentes</h1>
+  <p class="lead">A pesar de la alta compatibilidad de la CLI, pueden surgir imprevistos durante la instalación o la ejecución. Aquí tienes los cinco casos documentados, con síntoma, causa probable y solución paso a paso.</p>
+
+  <h2 id="e1">Error 1 — «No skills found» durante la instalación</h2>
+  <div class="card tight">
+    <p><strong>Síntoma:</strong> la CLI analiza el repositorio o la ruta proporcionada, pero informa que no se encontraron habilidades.</p>
+    <p><strong>Causa probable:</strong> el archivo <code>SKILL.md</code> no existe dentro de las rutas de contenedor escaneadas, o el encabezado YAML (<em>frontmatter</em>) carece de las claves obligatorias <code>name</code> o <code>description</code>.</p>
+    <p style="margin-bottom:0"><strong>Solución paso a paso:</strong></p>
+    <ol style="margin-bottom:0">
+      <li>Abre el archivo <code>SKILL.md</code> objetivo en tu editor.</li>
+      <li>Verifica que el encabezado comience estrictamente en la primera línea del archivo con los tres guiones <code>---</code>.</li>
+      <li>Confirma que las propiedades <code>name:</code> y <code>description:</code> estén presentes y bien formateadas.</li>
+      <li>Si la habilidad está ubicada en un directorio profundo fuera de las carpetas estándar, ejecuta el comando añadiendo la bandera <code>--full-depth</code>.</li>
+    </ol>
+  </div>
+
+  <h2 id="e2">Error 2 — La habilidad no se carga ni aparece dentro del agente de IA</h2>
+  <div class="card tight">
+    <p><strong>Síntoma:</strong> la CLI confirma la instalación exitosa, pero el agente de IA no responde a las instrucciones de la habilidad.</p>
+    <p><strong>Causa probable:</strong> archivos ubicados en una ruta no leída por el agente, o sintaxis YAML no válida en el encabezado.</p>
+    <p style="margin-bottom:0"><strong>Solución paso a paso:</strong></p>
+    <ol style="margin-bottom:0">
+      <li>Ejecuta <code>npx skills list</code> para confirmar la ruta exacta donde fue instalada la habilidad.</li>
+      <li>Valida que tu agente de IA esté configurado para leer el directorio del proyecto (por ejemplo <code>.agents/skills/</code> o <code>.claude/skills/</code>).</li>
+      <li>Para usuarios de Kiro CLI con agentes personalizados, confirma que el recurso <code>skill://.kiro/skills/**/SKILL.md</code> esté declarado en el archivo JSON del agente.</li>
+    </ol>
+  </div>
+
+  <h2 id="e3">Error 3 — Fallos o permisos denegados al crear enlaces simbólicos</h2>
+  <div class="card tight">
+    <p><strong>Síntoma:</strong> error del sistema operativo indicando permisos insuficientes al crear <em>symlinks</em> durante <code>npx skills add</code>.</p>
+    <p><strong>Causa probable:</strong> políticas de seguridad del sistema de archivos local o restricciones de la cuenta de usuario.</p>
+    <p style="margin-bottom:0"><strong>Solución paso a paso:</strong></p>
+    <ol style="margin-bottom:0">
+      <li>Ejecuta la instalación utilizando explícitamente el método de copia física agregando el parámetro <code>--copy</code>.</li>
+    </ol>
+    <pre style="margin-top:.6rem;margin-bottom:0"><code>npx skills add vercel-labs/agent-skills --copy</code></pre>
+  </div>
+
+  <h2 id="e4">Error 4 — Excedido el límite de tamaño o de archivos al descargar</h2>
+  <div class="card tight">
+    <p><strong>Síntoma:</strong> la descarga desde una URL directa cancela la operación indicando que el paquete excede los límites permitidos.</p>
+    <p><strong>Causa probable:</strong> el archivo comprimido supera los 10 MiB de descarga, los 25 MiB de extracción o los 1000 archivos por omisión.</p>
+    <p style="margin-bottom:0"><strong>Solución paso a paso:</strong></p>
+    <ol style="margin-bottom:0">
+      <li>Si confías plenamente en la fuente, incrementa temporalmente los límites de la CLI anteponiendo las variables de entorno en la terminal.</li>
+    </ol>
+    <pre style="margin-top:.6rem;margin-bottom:0"><code>SKILLS_DOWNLOAD_MAX_BYTES=52428800 SKILLS_EXTRACT_MAX_BYTES=104857600 npx skills add https://example.com/download/my-skill</code></pre>
+  </div>
+
+  <h2 id="e5">Error 5 — Caracteres extraños o instrucciones ignoradas</h2>
+  <div class="card tight">
+    <p><strong>Síntoma:</strong> el agente parece leer la habilidad, pero no aplica las reglas o las aplica de forma errática.</p>
+    <p><strong>Causa probable:</strong> según las buenas prácticas documentadas, descripciones demasiado vagas, ausencia de disparadores explícitos o pasos redactados de forma ambigua.</p>
+    <p style="margin-bottom:0"><strong>Solución paso a paso:</strong></p>
+    <ol style="margin-bottom:0">
+      <li>Reescribe <code>description</code> para que sea concisa e indique claramente el propósito.</li>
+      <li>Detalla en <code>When to Use</code> los escenarios, extensiones de archivo o tareas concretas que deben desencadenar la habilidad.</li>
+      <li>Redacta <code>Steps</code> como lista numerada, con verbos en imperativo o infinitivo, una sola acción por paso.</li>
+    </ol>
+  </div>
+
+  <h2 id="e6">Errores de forma en el archivo <code>SKILL.md</code></h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Error</th><th>Por qué rompe la detección</th><th>Cómo corregirlo</th></tr></thead>
+      <tbody>
+        <tr><td>El archivo no empieza por <code>---</code></td><td>El <em>frontmatter</em> debe abrir en la primera línea</td><td>Elimina cualquier línea en blanco o comentario previo</td></tr>
+        <tr><td><code>name</code> en mayúsculas o con espacios</td><td>Debe ser <em>kebab-case</em> estricto, en minúsculas</td><td><code>name: mi-primera-skill</code></td></tr>
+        <tr><td>Falta <code>description</code></td><td>Es un campo obligatorio</td><td>Añade una frase clara sobre qué hace y cuándo activarla</td></tr>
+        <tr><td>Habilidad en una ruta no escaneada</td><td>La CLI solo mira ciertas carpetas y hasta 3 niveles</td><td>Mueve el archivo o usa <code>--full-depth</code></td></tr>
+        <tr><td>Dos habilidades con el mismo nombre</td><td>La regla de <em>shadowing</em> oculta la más profunda</td><td>Renombra una de las dos</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <strong>Conexión con el siguiente paso</strong>
+    Una vez resueltos los posibles bloqueos técnicos, es momento de analizar las mejores prácticas de diseño y de repasar lo aprendido.
+  </div>
+
+</section>
+
+<!-- ==================== RESUMEN ==================== -->
+<section class="panel" id="panel-resumen" role="tabpanel" aria-labelledby="tab-resumen" tabindex="0">
+
+  <h1>Resumen</h1>
+
+  <h2>Las cinco ideas clave</h2>
+  <div class="grid two">
+    <div class="card tight"><h4>1. El problema</h4><p class="small" style="margin:0">Cada agente exige su propio archivo de reglas. Mantener cuatro o cinco archivos con sintaxis distintas genera fricción y desalineación.</p></div>
+    <div class="card tight"><h4>2. La solución</h4><p class="small" style="margin:0"><code>npx skills</code> es una CLI en TypeScript, con licencia MIT, compatible con más de 75 agentes, que centraliza la gestión de habilidades.</p></div>
+    <div class="card tight"><h4>3. La unidad</h4><p class="small" style="margin:0">Una <em>Skill</em> es un archivo <code>SKILL.md</code> con <em>frontmatter</em> YAML. <code>name</code> y <code>description</code> son obligatorios.</p></div>
+    <div class="card tight"><h4>4. El mecanismo</h4><p class="small" style="margin:0">Los enlaces simbólicos crean una fuente única de verdad; <code>--copy</code> es la alternativa cuando los symlinks están restringidos.</p></div>
+    <div class="card tight"><h4>5. El límite</h4><p class="small" style="margin:0">El descubrimiento llega a 3 niveles de profundidad en carpetas reconocidas. <code>--full-depth</code> amplía la búsqueda.</p></div>
+    <div class="card tight"><h4>Buenas prácticas</h4><p class="small" style="margin:0">Descripciones semánticas, disparadores explícitos en <em>When to Use</em> y pasos secuenciales y deterministas.</p></div>
+  </div>
+
+  <h2>Chuleta de comandos</h2>
+  <pre><code># Descubrimiento
+npx skills find
+npx skills find typescript
+npx skills find react --owner vercel
+
+# Inspección sin instalar
+npx skills add vercel-labs/agent-skills --list
+
+# Instalación
+npx skills add vercel-labs/agent-skills
+npx skills add vercel-labs/agent-skills --skill web-design-guidelines -g -a claude-code --copy -y
+npx skills add ./mi-primera-skill -a '*' -y
+npx skills add vercel-labs/agent-skills --all
+
+# Uso efímero
+npx skills use vercel-labs/agent-skills@web-design-guidelines | claude
+npx skills use vercel-labs/agent-skills --skill web-design-guidelines --agent claude-code
+
+# Listado
+npx skills list
+npx skills ls -g
+npx skills ls -a claude-code -a cursor
+
+# Actualización
+npx skills update
+npx skills update frontend-design web-design-guidelines
+npx skills update -g
+npx skills update -p
+npx skills update -y
+
+# Eliminación
+npx skills remove web-design-guidelines --agent claude-code
+npx skills rm --all -g
+
+# Inicialización
+npx skills init
+npx skills init mi-primera-skill
+
+# Privacidad
+export DISABLE_TELEMETRY=1</code></pre>
+
+  <h2>Glosario técnico completo</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Término</th><th>Definición</th></tr></thead>
+      <tbody>
+        <tr><td><strong>agentskills.io</strong></td><td>Especificación abierta y universal que define el formato de archivos, encabezados YAML y comportamiento esperado de las habilidades para agentes de IA.</td></tr>
+        <tr><td><strong>Canonical Copy (copia canónica)</strong></td><td>Ubicación centralizada donde la CLI almacena la versión maestra de una habilidad antes de crear enlaces simbólicos hacia los agentes.</td></tr>
+        <tr><td><strong>Ephemeral Use (uso efímero)</strong></td><td>Capacidad de ejecutar una habilidad generando un prompt temporal, sin escribir ni guardar archivos permanentes en el proyecto.</td></tr>
+        <tr><td><strong>Frontmatter</strong></td><td>Bloque de metadatos codificado en YAML al inicio de un archivo Markdown, delimitado por tres guiones (<code>---</code>).</td></tr>
+        <tr><td><strong>Shadowing (ensombrecimiento)</strong></td><td>Regla de la CLI según la cual una habilidad encontrada en una ruta superior oculta a otra con el mismo nombre ubicada en una carpeta más profunda.</td></tr>
+        <tr><td><strong>skills.sh</strong></td><td>Catálogo y directorio web centralizado para buscar y descubrir habilidades disponibles en el ecosistema.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Buenas prácticas de diseño de <code>SKILL.md</code></h2>
+  <ol>
+    <li><strong>Redactar descripciones semánticas y precisas:</strong> la propiedad <code>description</code> del frontmatter YAML es leída por el agente para evaluar si activa o no la habilidad. Debe ser concisa e indicar claramente el propósito.</li>
+    <li><strong>Establecer disparadores explícitos en <em>When to Use</em>:</strong> detalla con claridad los escenarios, extensiones de archivo o tareas de desarrollo específicas que deben desencadenar la aplicación de la habilidad.</li>
+    <li><strong>Estructurar los pasos de forma secuencial y determinista:</strong> define la sección <em>Steps</em> mediante listas numeradas redactadas con verbos en imperativo o infinitivo, para evitar ambigüedades durante la ejecución del agente.</li>
+  </ol>
+
+  <h2>Siguientes pasos</h2>
+  <ul>
+    <li>Explora el catálogo de <strong>skills.sh</strong> para descubrir habilidades ya publicadas.</li>
+    <li>Lee la especificación <strong>Agent Skills</strong> en <code>agentskills.io</code> para conocer el estándar completo.</li>
+    <li>Empaqueta las reglas de tu equipo en un <code>SKILL.md</code> y sustitúyelas por los archivos individuales de cada agente.</li>
+  </ul>
+
+</section>
+
+<!-- ==================== FUENTES ==================== -->
+<section class="panel" id="panel-fuentes" role="tabpanel" aria-labelledby="tab-fuentes" tabindex="0">
+
+  <h1>Fuentes y recursos</h1>
+
+  <div class="note">
+    <strong>Origen del contenido</strong>
+    Todo el contenido de este tutorial procede del documento <em>«Guía Definitiva Vercel Skills - Tutorial Paso a Paso»</em> entregado como material de partida. Las salidas de terminal que aparecen en la sección PRÁCTICA están etiquetadas en ese mismo documento como <strong>simuladas</strong>. No se han añadido datos, funciones ni procedimientos que no figuren en él.
+  </div>
+
+  <h2>Directorio de enlaces oficiales</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Recurso</th><th>Enlace</th></tr></thead>
+      <tbody>
+        <tr><td>Sitio oficial de Vercel Skills (skills.sh)</td><td><a href="https://skills.sh/" target="_blank" rel="noopener noreferrer">https://skills.sh/</a></td></tr>
+        <tr><td>Especificación Agent Skills</td><td><a href="https://agentskills.io/" target="_blank" rel="noopener noreferrer">https://agentskills.io/</a></td></tr>
+        <tr><td>Repositorio oficial en GitHub (vercel-labs/skills)</td><td><a href="https://github.com/vercel-labs/skills" target="_blank" rel="noopener noreferrer">https://github.com/vercel-labs/skills</a></td></tr>
+        <tr><td>Repositorio de habilidades oficiales (vercel-labs/agent-skills)</td><td><a href="https://github.com/vercel-labs/agent-skills" target="_blank" rel="noopener noreferrer">https://github.com/vercel-labs/agent-skills</a></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Lista de URL para copiar</h3>
+  <pre><code>https://skills.sh/
+https://agentskills.io/
+https://github.com/vercel-labs/skills
+https://github.com/vercel-labs/agent-skills</code></pre>
+
+  <h2>Qué se ha verificado y qué no</h2>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Aspecto</th><th>Estado</th></tr></thead>
+      <tbody>
+        <tr><td>Fidelidad del contenido al documento fuente</td><td>Revisado por inspección directa del texto</td></tr>
+        <tr><td>Estructura HTML, cierre de etiquetas e identificadores</td><td>Revisado estáticamente</td></tr>
+        <tr><td>Sintaxis JavaScript</td><td>Revisada estáticamente</td></tr>
+        <tr><td>Ejecución en navegador real</td><td><strong>No ejecutada</strong></td></tr>
+        <tr><td>Generación de PDF</td><td><strong>No ejecutada</strong></td></tr>
+        <tr><td>Ejecución de la CLI <code>npx skills</code></td><td><strong>No ejecutada</strong></td></tr>
+        <tr><td>Comprobación de los enlaces externos</td><td><strong>No ejecutada</strong></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="warnbox">
+    <strong>Nota sobre los enlaces</strong>
+    Los enlaces se reproducen tal como aparecen en el documento fuente. No se ha comprobado su disponibilidad actual. Si alguno no responde, busca el repositorio por su nombre en GitHub.
+  </div>
+
+</section>
+
+<!-- ==================== CRÉDITOS ==================== -->
+<section class="panel" id="panel-creditos" role="tabpanel" aria-labelledby="tab-creditos" tabindex="0">
+
+  <h1>Créditos</h1>
+
+  <div class="svg-slot" id="svg-slot-creditos" role="img"
+       aria-label="Ilustración: un archivo central SKILL.md conectado mediante líneas animadas con varias herramientas de inteligencia artificial, que representa una habilidad reutilizable compartida entre agentes."></div>
+  <p class="svg-caption">Un archivo <code>SKILL.md</code> en el centro; varias herramientas de IA conectadas a él mediante enlaces simbólicos.</p>
+
+  <div class="card">
+    <p class="author-name">Rubén Sbarsky</p>
+    <p class="author-role">Autor del tutorial</p>
+    <p class="small muted">Tutorial elaborado a partir del documento <em>«Guía Definitiva Vercel Skills - Tutorial Paso a Paso»</em>, transformado en una experiencia de aprendizaje interactiva y autónoma.</p>
+
+    <ul class="meta-list">
+      <li><span class="k">Versión</span><span class="v">V001</span></li>
+      <li><span class="k">Archivo</span><span class="v">tutorial_vercel_skills_V001.html</span></li>
+      <li><span class="k">Fecha y hora de creación</span><span class="v">17/10/2026 — 08:58:11</span></li>
+      <li><span class="k">Formato</span><span class="v">HTML autónomo (sin dependencias externas)</span></li>
+      <li><span class="k">Tema</span><span class="v">Vercel Skills (npx skills)</span></li>
+    </ul>
+  </div>
+
+  <div class="note">
+    <strong>Sobre la fecha</strong>
+    La fecha y la hora anteriores son texto fijo dentro del archivo. No se recalculan al abrirlo.
+  </div>
+
+  <div class="note">
+    <strong>Sobre esta versión</strong>
+    Versión <strong>V001</strong>. Si se corrige, se generará una <strong>V002</strong> con el nombre de archivo actualizado y este mismo número actualizado aquí.
+  </div>
+
+</section>
+
+</main>
+
+<button id="toTop" type="button" aria-label="Volver arriba" title="Volver arriba">↑</button>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<!-- ===== FUENTE ÚNICA DEL SVG (se extrae y se elimina del DOM al cargar) ===== -->
+<div id="svg-source" hidden aria-hidden="true">
+<svg class="hero-svg" viewBox="0 0 640 240" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="@@G1@@" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#1e3a5f"/>
+    </linearGradient>
+    <radialGradient id="@@G2@@" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.40"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <circle class="halo" cx="320" cy="120" r="108" fill="url(#@@G2@@)"/>
+
+  <g class="flow" fill="none" stroke="url(#@@G1@@)" stroke-width="2" stroke-linecap="round">
+    <path d="M245,100 Q160,70 95,55"/>
+    <path d="M245,120 Q160,120 95,120"/>
+    <path d="M245,140 Q160,170 95,185"/>
+    <path d="M395,100 Q480,70 545,55"/>
+    <path d="M395,120 Q480,120 545,120"/>
+    <path d="M395,140 Q480,170 545,185"/>
+  </g>
+
+  <rect class="sv-card" x="250" y="78" width="140" height="84" rx="14"/>
+  <text class="sv-txt" x="320" y="106" font-size="15" text-anchor="middle">SKILL.md</text>
+  <rect class="sv-line" x="268" y="118" width="104" height="5" rx="2.5"/>
+  <rect class="sv-line" x="268" y="130" width="80" height="5" rx="2.5"/>
+  <rect class="sv-line" x="268" y="142" width="92" height="5" rx="2.5"/>
+
+  <circle class="node-ring d1" cx="70" cy="52" r="26" fill="none" stroke="#38bdf8" stroke-width="2"/>
+  <circle class="sv-node" cx="70" cy="52" r="19"/>
+  <text class="sv-muted" x="70" y="57" font-size="10" text-anchor="middle">A1</text>
+  <text class="sv-muted" x="70" y="90" font-size="10" text-anchor="middle">Cursor</text>
+
+  <circle class="node-ring d2" cx="70" cy="120" r="26" fill="none" stroke="#38bdf8" stroke-width="2"/>
+  <circle class="sv-node" cx="70" cy="120" r="19"/>
+  <text class="sv-muted" x="70" y="125" font-size="10" text-anchor="middle">A2</text>
+  <text class="sv-muted" x="70" y="158" font-size="10" text-anchor="middle">Claude Code</text>
+
+  <circle class="node-ring d3" cx="70" cy="188" r="26" fill="none" stroke="#38bdf8" stroke-width="2"/>
+  <circle class="sv-node" cx="70" cy="188" r="19"/>
+  <text class="sv-muted" x="70" y="193" font-size="10" text-anchor="middle">A3</text>
+  <text class="sv-muted" x="70" y="226" font-size="10" text-anchor="middle">Copilot</text>
+
+  <circle class="node-ring d4" cx="570" cy="52" r="26" fill="none" stroke="#38bdf8" stroke-width="2"/>
+  <circle class="sv-node" cx="570" cy="52" r="19"/>
+  <text class="sv-muted" x="570" y="57" font-size="10" text-anchor="middle">A4</text>
+  <text class="sv-muted" x="570" y="90" font-size="10" text-anchor="middle">OpenCode</text>
+
+  <circle class="node-ring d5" cx="570" cy="120" r="26" fill="none" stroke="#38bdf8" stroke-width="2"/>
+  <circle class="sv-node" cx="570" cy="120" r="19"/>
+  <text class="sv-muted" x="570" y="125" font-size="10" text-anchor="middle">A5</text>
+  <text class="sv-muted" x="570" y="158" font-size="10" text-anchor="middle">Codex</text>
+
+  <circle class="node-ring d1" cx="570" cy="188" r="26" fill="none" stroke="#38bdf8" stroke-width="2"/>
+  <circle class="sv-node" cx="570" cy="188" r="19"/>
+  <text class="sv-muted" x="570" y="193" font-size="10" text-anchor="middle">A6</text>
+  <text class="sv-muted" x="570" y="226" font-size="10" text-anchor="middle">Kiro CLI</text>
+</svg>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  /* =========================================================
+     0. UTILIDADES BÁSICAS
+     ========================================================= */
+  var LS = (function () {
+    var ok = false;
+    try {
+      var k = '__vs_test__';
+      window.localStorage.setItem(k, '1');
+      window.localStorage.removeItem(k);
+      ok = true;
+    } catch (e) { ok = false; }
+    return {
+      available: ok,
+      get: function (key, def) {
+        if (!ok) return def;
+        try {
+          var v = window.localStorage.getItem(key);
+          return v === null ? def : v;
+        } catch (e) { return def; }
+      },
+      set: function (key, val) {
+        if (!ok) return;
+        try { window.localStorage.setItem(key, val); } catch (e) { /* silencioso */ }
+      }
+    };
+  })();
+
+  var K_THEME  = 'vs_theme';
+  var K_FS     = 'vs_fs';
+  var K_TAB    = 'vs_tab';
+  var K_CHECKS = 'vs_checks';
+  var K_PAUSE  = 'vs_pause';
+
+  var toastEl = document.getElementById('toast');
+  var toastTimer = null;
+  function toast(msg) {
+    if (!toastEl) return;
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    if (toastTimer) window.clearTimeout(toastTimer);
+    toastTimer = window.setTimeout(function () {
+      toastEl.classList.remove('show');
+    }, 2200);
+  }
+
+  /* =========================================================
+     1. PESTAÑAS
+     ========================================================= */
+  var TABS = ['inicio', 'conceptos', 'procedimiento', 'practica', 'errores', 'resumen', 'fuentes', 'creditos'];
+  var tabButtons = Array.prototype.slice.call(document.querySelectorAll('.tabs [role="tab"]'));
+  var panels = Array.prototype.slice.call(document.querySelectorAll('.panel'));
+
+  function normalizeTab(name) {
+    if (!name) return null;
+    var n = String(name).toLowerCase().replace(/^#/, '').replace(/^panel-/, '').trim();
+    if (n === 'créditos' || n === 'creditos') return 'creditos';
+    if (n === 'práctica' || n === 'practica') return 'practica';
+    return TABS.indexOf(n) !== -1 ? n : null;
+  }
+
+  var currentTab = 'inicio';
+
+  function showTab(name, opts) {
+    opts = opts || {};
+    var id = normalizeTab(name) || 'inicio';
+    currentTab = id;
+
+    panels.forEach(function (p) {
+      var match = (p.id === 'panel-' + id);
+      p.classList.toggle('active', match);
+    });
+
+    tabButtons.forEach(function (b) {
+      var sel = (b.getAttribute('data-tab') === id);
+      b.setAttribute('aria-selected', sel ? 'true' : 'false');
+      b.setAttribute('tabindex', sel ? '0' : '-1');
+    });
+
+    LS.set(K_TAB, id);
+
+    if (!opts.silent) {
+      try {
+        if (window.history && window.history.replaceState) {
+          window.history.replaceState(null, '', '#' + id);
+        } else {
+          window.location.hash = id;
+        }
+      } catch (e) { /* algunos navegadores bloquean replaceState en file:// */ }
+    }
+
+    // Montar los SVG de la pestaña recién mostrada
+    var panel = document.getElementById('panel-' + id);
+    if (panel) {
+      var slots = panel.querySelectorAll('.svg-slot');
+      Array.prototype.forEach.call(slots, function (slot) { mountSvg(slot); });
+    }
+
+    // Restaurar foco del panel para lectores de pantalla
+    if (!opts.noFocus && panel) {
+      // No forzamos el foco para no desplazar la vista, pero sí lo hacemos accesible
+      panel.setAttribute('tabindex', '0');
+    }
+
+    // Al cambiar de pestaña, volver arriba salvo que se indique lo contrario
+    if (!opts.keepScroll) {
+      try { window.scrollTo({ top: 0, behavior: 'auto' }); } catch (e) { window.scrollTo(0, 0); }
+    }
+  }
+
+  tabButtons.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      showTab(btn.getAttribute('data-tab'));
+    });
+    btn.addEventListener('keydown', function (ev) {
+      var i = tabButtons.indexOf(btn);
+      var next = null;
+      if (ev.key === 'ArrowRight') next = tabButtons[(i + 1) % tabButtons.length];
+      else if (ev.key === 'ArrowLeft') next = tabButtons[(i - 1 + tabButtons.length) % tabButtons.length];
+      else if (ev.key === 'Home') next = tabButtons[0];
+      else if (ev.key === 'End') next = tabButtons[tabButtons.length - 1];
+      if (next) {
+        ev.preventDefault();
+        next.focus();
+        showTab(next.getAttribute('data-tab'));
+      }
+    });
+  });
+
+  window.addEventListener('hashchange', function () {
+    var id = normalizeTab(window.location.hash);
+    if (id && id !== currentTab) showTab(id, { silent: true });
+  });
+
+  // Pestaña inicial: hash > guardada > inicio
+  (function initTab() {
+    var fromHash = normalizeTab(window.location.hash);
+    if (fromHash) { showTab(fromHash, { silent: true }); return; }
+    var saved = normalizeTab(LS.get(K_TAB, ''));
+    showTab(saved || 'inicio', { silent: true });
+  })();
+
+  /* =========================================================
+     2. SVG COMPARTIDO (plantilla única)
+     ========================================================= */
+  var svgSourceEl = document.getElementById('svg-source');
+  var SVG_TEMPLATE = svgSourceEl ? svgSourceEl.innerHTML : '';
+  if (svgSourceEl && svgSourceEl.parentNode) {
+    svgSourceEl.parentNode.removeChild(svgSourceEl);
+  }
+
+  var svgSeq = 0;
+
+  function buildSvgMarkup() {
+    svgSeq += 1;
+    var n = svgSeq;
+    return SVG_TEMPLATE
+      .replace(/@@G1@@/g, 'vsGrad' + n + 'a')
+      .replace(/@@G2@@/g, 'vsGrad' + n + 'b')
+      .replace(/@@([A-Z0-9]+)@@/g, function (m, tag) { return 'vs' + n + tag.toLowerCase(); });
+  }
+
+  function mountSvg(slot) {
+    if (!slot) return;
+    // Ya montado (svg o imagen de respaldo)
+    if (slot.querySelector('svg') || slot.querySelector('img')) return;
+    if (!SVG_TEMPLATE) return;
+
+    var html = buildSvgMarkup();
+
+    try {
+      slot.innerHTML = html;
+    } catch (e) {
+      return;
+    }
+
+    var svg = slot.querySelector('svg');
+    var isVisible = slot.getClientRects().length > 0;
+
+    // Mecanismo alternativo: si el SVG no se ha creado o no tiene tamaño visible,
+    // se sustituye por una imagen SVG embebida mediante data:.
+    var needsFallback = false;
+    if (!svg) {
+      needsFallback = true;
+    } else if (isVisible) {
+      var r = svg.getBoundingClientRect();
+      if (!r || r.width < 1 || r.height < 1) needsFallback = true;
+    }
+
+    if (needsFallback) {
+      try {
+        var dataUri = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(html);
+        var img = document.createElement('img');
+        img.src = dataUri;
+        img.alt = '';
+        slot.innerHTML = '';
+        slot.appendChild(img);
+      } catch (e2) {
+        // Si incluso el respaldo falla, se deja el contenedor vacío;
+        // la comprobación periódica lo reintentará.
+      }
+    }
+  }
+
+  function mountAllSvgs() {
+    var slots = document.querySelectorAll('.svg-slot');
+    Array.prototype.forEach.call(slots, function (slot) {
+      if (!slot.querySelector('svg') && !slot.querySelector('img')) mountSvg(slot);
+    });
+  }
+
+  // Montaje inicial de las instancias visibles
+  mountAllSvgs();
+
+  // Comprobación periódica: repara un contenedor visible que haya quedado vacío
+  window.setInterval(function () {
+    var slots = document.querySelectorAll('.svg-slot');
+    Array.prototype.forEach.call(slots, function (slot) {
+      var visible = slot.getClientRects().length > 0;
+      if (visible && !slot.querySelector('svg') && !slot.querySelector('img')) {
+        mountSvg(slot);
+      }
+    });
+  }, 1500);
+
+  /* =========================================================
+     3. TEMA Y TAMAÑO DE LETRA
+     ========================================================= */
+  var htmlEl = document.documentElement;
+  var themeBtn = document.getElementById('themeBtn');
+
+  function applyTheme(theme) {
+    htmlEl.setAttribute('data-theme', theme);
+    if (themeBtn) {
+      themeBtn.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
+      themeBtn.textContent = theme === 'light' ? '☾' : '☀';
+      themeBtn.setAttribute('aria-label',
+        theme === 'light' ? 'Cambiar a tema oscuro' : 'Cambiar a tema claro');
+    }
+    LS.set(K_THEME, theme);
+  }
+
+  (function initTheme() {
+    var saved = LS.get(K_THEME, '');
+    if (saved === 'light' || saved === 'dark') { applyTheme(saved); return; }
+    var prefersLight = false;
+    try {
+      prefersLight = window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches;
+    } catch (e) { prefersLight = false; }
+    applyTheme(prefersLight ? 'light' : 'dark');
+  })();
+
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function () {
+      applyTheme(htmlEl.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+    });
+  }
+
+  var FS_MIN = 13, FS_MAX = 22, FS_DEF = 16;
+  function applyFontSize(px) {
+    var v = Math.max(FS_MIN, Math.min(FS_MAX, px));
+    htmlEl.style.setProperty('--fs', v + 'px');
+    LS.set(K_FS, String(v));
+  }
+  (function initFont() {
+    var saved = parseInt(LS.get(K_FS, ''), 10);
+    applyFontSize(isNaN(saved) ? FS_DEF : saved);
+  })();
+
+  var fontMinus = document.getElementById('fontMinus');
+  var fontPlus = document.getElementById('fontPlus');
+  function currentFs() {
+    var v = parseInt(window.getComputedStyle(htmlEl).getPropertyValue('--fs'), 10);
+    return isNaN(v) ? FS_DEF : v;
+  }
+  if (fontMinus) {
+    fontMinus.addEventListener('click', function () {
+      applyFontSize(currentFs() - 1);
+      toast('Tamaño de letra: ' + currentFs() + ' px');
+    });
+  }
+  if (fontPlus) {
+    fontPlus.addEventListener('click', function () {
+      applyFontSize(currentFs() + 1);
+      toast('Tamaño de letra: ' + currentFs() + ' px');
+    });
+  }
+
+  /* =========================================================
+     4. PAUSA DE ANIMACIÓN
+     ========================================================= */
+  var pauseBtn = document.getElementById('pauseBtn');
+  function applyPause(paused) {
+    document.body.classList.toggle('svg-paused', !!paused);
+    if (pauseBtn) {
+      pauseBtn.setAttribute('aria-pressed', paused ? 'true' : 'false');
+      pauseBtn.textContent = paused ? '▶' : '⏸';
+      pauseBtn.setAttribute('aria-label',
+        paused ? 'Reanudar la animación' : 'Pausar la animación');
+    }
+    LS.set(K_PAUSE, paused ? '1' : '0');
+  }
+  (function initPause() {
+    applyPause(LS.get(K_PAUSE, '0') === '1');
+  })();
+  if (pauseBtn) {
+    pauseBtn.addEventListener('click', function () {
+      applyPause(!document.body.classList.contains('svg-paused'));
+    });
+  }
+
+  /* =========================================================
+     5. BOTONES COPIAR
+     ========================================================= */
+  function legacyCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', 'readonly');
+    ta.style.position = 'fixed';
+    ta.style.top = '-1000px';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    var ok = false;
+    try {
+      ok = document.execCommand('copy');
+    } catch (e) {
+      ok = false;
+    }
+    document.body.removeChild(ta);
+    if (!ok) throw new Error('execCommand falló');
+  }
+
+  function showCopyFallback(text) {
+    var backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop';
+
+    var modal = document.createElement('div');
+    modal.className = 'modal';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-label', 'Copia manual del contenido');
+
+    var h = document.createElement('h2');
+    h.textContent = 'Copia manual';
+
+    var p = document.createElement('p');
+    p.className = 'small';
+    p.textContent = 'El portapapeles no está disponible. Selecciona el texto de abajo y cópialo con Ctrl+C (o Cmd+C en Mac).';
+
+    var ta = document.createElement('textarea');
+    ta.readOnly = true;
+    ta.value = text;
+
+    var actions = document.createElement('div');
+    actions.className = 'modal-actions';
+
+    var btnSel = document.createElement('button');
+    btnSel.type = 'button';
+    btnSel.className = 'btn primary';
+    btnSel.textContent = 'Seleccionar todo';
+    btnSel.addEventListener('click', function () {
+      ta.focus();
+      ta.select();
+      ta.setSelectionRange(0, ta.value.length);
+    });
+
+    var btnClose = document.createElement('button');
+    btnClose.type = 'button';
+    btnClose.className = 'btn';
+    btnClose.textContent = 'Cerrar';
+    btnClose.addEventListener('click', function () {
+      if (backdrop.parentNode) backdrop.parentNode.removeChild(backdrop);
+    });
+
+    actions.appendChild(btnSel);
+    actions.appendChild(btnClose);
+    modal.appendChild(h);
+    modal.appendChild(p);
+    modal.appendChild(ta);
+    modal.appendChild(actions);
+    backdrop.appendChild(modal);
+    document.body.appendChild(backdrop);
+
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+
+    backdrop.addEventListener('click', function (ev) {
+      if (ev.target === backdrop && backdrop.parentNode) {
+        backdrop.parentNode.removeChild(backdrop);
+      }
+    });
+    backdrop.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && backdrop.parentNode) {
+        backdrop.parentNode.removeChild(backdrop);
+      }
+    });
+  }
+
+  function setBtnState(btn, cls, label, revertMs) {
+    var original = btn.getAttribute('data-original') || btn.textContent;
+    btn.setAttribute('data-original', original);
+    btn.classList.remove('done', 'failed');
+    btn.classList.add(cls);
+    btn.textContent = label;
+    window.setTimeout(function () {
+      btn.classList.remove('done', 'failed');
+      btn.textContent = original;
+    }, revertMs || 1800);
+  }
+
+  function copyText(text, btn) {
+    function ok() { setBtnState(btn, 'done', 'COPIADO'); }
+    function fail() {
+      setBtnState(btn, 'failed', 'ERROR');
+      showCopyFallback(text);
+    }
+
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(ok).catch(function () {
+        try { legacyCopy(text); ok(); } catch (e) { fail(); }
+      });
+      return;
+    }
+    try { legacyCopy(text); ok(); } catch (e) { fail(); }
+  }
+
+  (function initCopyButtons() {
+    var pres = document.querySelectorAll('pre');
+    Array.prototype.forEach.call(pres, function (pre) {
+      if (pre.parentNode && pre.parentNode.classList && pre.parentNode.classList.contains('code-wrap')) return;
+
+      var wrap = document.createElement('div');
+      wrap.className = 'code-wrap';
+      pre.parentNode.insertBefore(wrap, pre);
+      wrap.appendChild(pre);
+
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'copy-btn';
+      btn.textContent = 'COPIAR';
+      btn.setAttribute('aria-label', 'Copiar el contenido de este bloque de código');
+
+      btn.addEventListener('click', function () {
+        var codeEl = pre.querySelector('code');
+        var text = codeEl ? codeEl.textContent : pre.textContent;
+        copyText(text, btn);
+      });
+
+      wrap.appendChild(btn);
+    });
+  })();
+
+  /* =========================================================
+     6. BUSCADOR INTERNO
+     ========================================================= */
+  var searchInput = document.getElementById('search');
+  var searchResults = document.getElementById('searchResults');
+  var searchIndex = null;
+
+  function buildSearchIndex() {
+    var idx = [];
+    panels.forEach(function (panel) {
+      var tab = panel.id.replace('panel-', '');
+      var nodes = panel.querySelectorAll('h2, h3, h4, p, li, td, summary');
+      Array.prototype.forEach.call(nodes, function (el) {
+        // Evitar duplicados: si contiene otros elementos indexables, se omite
+        if (el.querySelector('h2, h3, h4, p, li, td, summary')) return;
+        var raw = (el.textContent || '').replace(/\s+/g, ' ').trim();
+        if (raw.length < 4) return;
+        idx.push({
+          tab: tab,
+          el: el,
+          text: raw,
+          lower: raw.toLowerCase()
+        });
+      });
+    });
+    return idx;
+  }
+
+  function clearResults() {
+    if (!searchResults) return;
+    searchResults.innerHTML = '';
+    searchResults.hidden = true;
+  }
+
+  function runSearch(q) {
+    if (!searchResults) return;
+    var query = (q || '').trim().toLowerCase();
+
+    if (query.length < 2) {
+      clearResults();
+      return;
+    }
+
+    if (!searchIndex) searchIndex = buildSearchIndex();
+
+    var hits = [];
+    for (var i = 0; i < searchIndex.length && hits.length < 14; i++) {
+      var item = searchIndex[i];
+      var pos = item.lower.indexOf(query);
+      if (pos !== -1) hits.push({ item: item, pos: pos });
+    }
+
+    searchResults.innerHTML = '';
+
+    if (hits.length === 0) {
+      var empty = document.createElement('div');
+      empty.className = 'sr-empty';
+      empty.textContent = 'Sin resultados para «' + q + '».';
+      searchResults.appendChild(empty);
+      searchResults.hidden = false;
+      return;
+    }
+
+    hits.forEach(function (hit) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'sr-item';
+      btn.setAttribute('role', 'option');
+
+      var tabSpan = document.createElement('span');
+      tabSpan.className = 'sr-tab';
+      tabSpan.textContent = hit.item.tab;
+
+      var start = Math.max(0, hit.pos - 40);
+      var snippet = hit.item.text.substr(start, 130);
+      if (start > 0) snippet = '…' + snippet;
+      if (hit.item.text.length > start + 130) snippet = snippet + '…';
+
+      btn.appendChild(tabSpan);
+      btn.appendChild(document.createTextNode(snippet));
+
+      btn.addEventListener('click', function () {
+        goToResult(hit.item);
+      });
+
+      searchResults.appendChild(btn);
+    });
+
+    searchResults.hidden = false;
+  }
+
+  function goToResult(item) {
+    clearResults();
+    if (searchInput) searchInput.value = '';
+    showTab(item.tab, { silent: false, keepScroll: true });
+    window.setTimeout(function () {
+      if (!item.el) return;
+      item.el.classList.add('anchor-target');
+      try {
+        item.el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch (e) {
+        item.el.scrollIntoView();
+      }
+      item.el.classList.add('flash');
+      window.setTimeout(function () {
+        item.el.classList.remove('flash');
+      }, 1700);
+    }, 60);
+  }
+
+  if (searchInput) {
+    var searchTimer = null;
+    searchInput.addEventListener('input', function () {
+      if (searchTimer) window.clearTimeout(searchTimer);
+      var v = searchInput.value;
+      searchTimer = window.setTimeout(function () { runSearch(v); }, 140);
+    });
+
+    searchInput.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape') {
+        clearResults();
+        searchInput.blur();
+      } else if (ev.key === 'Enter') {
+        var first = searchResults ? searchResults.querySelector('.sr-item') : null;
+        if (first) {
+          ev.preventDefault();
+          first.click();
+        }
+      }
+    });
+
+    searchInput.addEventListener('focus', function () {
+      if (searchInput.value.trim().length >= 2) runSearch(searchInput.value);
+    });
+  }
+
+  document.addEventListener('click', function (ev) {
+    if (!searchResults || searchResults.hidden) return;
+    var wrap = searchResults.parentNode;
+    if (wrap && !wrap.contains(ev.target)) clearResults();
+  });
+
+  /* =========================================================
+     7. LISTAS DE COMPROBACIÓN (persistencia)
+     ========================================================= */
+  var checksState = {};
+  (function initChecks() {
+    var raw = LS.get(K_CHECKS, '');
+    if (raw) {
+      try {
+        var parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') checksState = parsed;
+      } catch (e) { checksState = {}; }
+    }
+
+    var boxes = document.querySelectorAll('input[type="checkbox"][data-ck]');
+    Array.prototype.forEach.call(boxes, function (box) {
+      var key = box.getAttribute('data-ck');
+      if (checksState[key]) box.checked = true;
+
+      box.addEventListener('change', function () {
+        if (box.checked) checksState[key] = true;
+        else delete checksState[key];
+        try {
+          LS.set(K_CHECKS, JSON.stringify(checksState));
+        } catch (e) { /* sin persistencia, pero la casilla sigue funcionando */ }
+      });
+    });
+  })();
+
+  /* =========================================================
+     8. PROGRESO DE LECTURA Y VOLVER ARRIBA
+     ========================================================= */
+  var progressBar = document.getElementById('progressbar');
+  var toTop = document.getElementById('toTop');
+
+  function onScroll() {
+    var doc = document.documentElement;
+    var scrollTop = window.pageYOffset || doc.scrollTop || 0;
+    var height = (doc.scrollHeight - doc.clientHeight) || 1;
+    var pct = Math.min(100, Math.max(0, (scrollTop / height) * 100));
+    if (progressBar) progressBar.style.width = pct + '%';
+    if (toTop) toTop.classList.toggle('show', scrollTop > 400);
+  }
+
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onScroll);
+  onScroll();
+
+  if (toTop) {
+    toTop.addEventListener('click', function () {
+      try { window.scrollTo({ top: 0, behavior: 'smooth' }); }
+      catch (e) { window.scrollTo(0, 0); }
+    });
+  }
+
+  /* =========================================================
+     9. IMPRESIÓN / PDF
+     ========================================================= */
+  var printBtn = document.getElementById('printBtn');
+  var closedDetails = [];
+
+  function openAllDetails() {
+    closedDetails = [];
+    var all = document.querySelectorAll('details');
+    Array.prototype.forEach.call(all, function (d) {
+      if (!d.open) {
+        closedDetails.push(d);
+        d.open = true;
+      }
+    });
+  }
+
+  function restoreDetails() {
+    closedDetails.forEach(function (d) { d.open = false; });
+    closedDetails = [];
+  }
+
+  function preparePrint() {
+    // 1. Montar todos los SVG, incluidas pestañas nunca visitadas
+    mountAllSvgs();
+    // 2. Abrir temporalmente los desplegables
+    openAllDetails();
+  }
+
+  window.addEventListener('beforeprint', preparePrint);
+  window.addEventListener('afterprint', restoreDetails);
+
+  function doPrint() {
+    preparePrint();
+    window.setTimeout(function () {
+      try {
+        window.print();
+      } catch (e) {
+        toast('Abre este archivo directamente en el navegador y utiliza Ctrl+P o Cmd+P.');
+      }
+      // Restauración de respaldo, por si afterprint no se dispara
+      window.setTimeout(restoreDetails, 1200);
+    }, 120);
+  }
+
+  if (printBtn) {
+    printBtn.addEventListener('click', function () {
+      var isFile = (window.location.protocol === 'file:');
+      if (!isFile) {
+        // No es un bloqueo real, pero informamos del método alternativo
+        toast('Si el navegador bloquea la impresión, usa Ctrl+P o Cmd+P.');
+      }
+      doPrint();
+    });
+  }
+
+  /* =========================================================
+     10. ACCESIBILIDAD Y CIERRE
+     ========================================================= */
+  document.addEventListener('keydown', function (ev) {
+    if (ev.key === 'Escape') {
+      clearResults();
+    }
+  });
+
+  // Reintento final de montaje tras la carga completa
+  window.addEventListener('load', function () {
+    mountAllSvgs();
+    onScroll();
+  });
+
+})();
+</script>
+
+</body>
+</html>
